@@ -1,0 +1,64 @@
+{
+  "name": "vscode-lyrics",
+  "displayName": "Lyrics",
+  "description": "Lirik otomatis dari player Linux dan browser, langsung di sidebar VS Code.",
+  "version": "0.1.0",
+  "publisher": "husain",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./src/extension.js",
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onView:lyrics.sidebar"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "lyrics",
+          "title": "Lyrics",
+          "icon": "media/lyrics.svg"
+        }
+      ]
+    },
+    "views": {
+      "lyrics": [
+        {
+          "type": "webview",
+          "id": "lyrics.sidebar",
+          "name": "Lyrics"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "lyrics.focus",
+        "title": "Lyrics: Buka Sidebar"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/extension.js && node --check src/media.js && node --check src/lyrics.js && node --check src/session.js && node --check media/sidebar.js",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "dependencies": {
+    "dbus-next": "0.10.2",
+    "undici": "^7.30.0"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.7.1"
+  },
+  "overrides": {
+    "dbus-next": {
+      "xml2js": "^0.6.2"
+    }
+  }
+}

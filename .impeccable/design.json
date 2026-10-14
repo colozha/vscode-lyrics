@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T09:57:37.486739+00:00",
+  "title": "Design System: VS Code Lyrics",
+  "extensions": {
+    "breakpoints": [
+      {
+        "name": "short-viewport",
+        "value": "(max-height: 420px)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Cari",
+      "html": "<button class=\"ds-button-primary\">Cari</button>",
+      "css": ".ds-button-primary{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;color:var(--vscode-button-foreground);background:var(--vscode-button-background);}.ds-button-primary:hover{background:var(--vscode-button-hoverBackground);}.ds-button-primary:active{filter:brightness(.95);}.ds-button-primary:disabled{cursor:wait;opacity:.65;}.ds-button-primary:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ikuti lirik",
+      "html": "<button class=\"ds-button-secondary\">Ikuti lirik</button>",
+      "css": ".ds-button-secondary{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;color:var(--vscode-button-secondaryForeground);background:var(--vscode-button-secondaryBackground);}.ds-button-secondary:hover{background:var(--vscode-button-secondaryHoverBackground);}.ds-button-secondary:active{filter:brightness(.95);}.ds-button-secondary:disabled{cursor:wait;opacity:.65;}.ds-button-secondary:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+    },
+    {
+      "name": "Attribution",
+      "kind": "button",
+      "refersTo": "button-link",
+      "description": "Provider link rendered as a text button.",
+      "html": "<button class=\"ds-link\">Lirik dari LRCLIB</button>",
+      "css": ".ds-link{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;padding:0;background:transparent;color:var(--vscode-textLink-foreground);font-size:11px;}.ds-link:hover{background:transparent;text-decoration:underline;text-underline-offset:3px;}.ds-link:active{filter:brightness(.95);}.ds-link:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+    },
+    {
+      "name": "Search field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Visible label with host input treatment.",
+      "html": "<label class=\"ds-label\" for=\"ds-query\">Cari lirik</label><input class=\"ds-input\" id=\"ds-query\" type=\"search\" placeholder=\"Judul lagu atau artis\">",
+      "css": ".ds-label{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:block;margin-bottom:6px;color:var(--vscode-foreground);}.ds-input{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 6px;color:var(--vscode-input-foreground);background:var(--vscode-input-background);caret-color:var(--vscode-input-foreground);}.ds-input::placeholder{color:var(--vscode-input-placeholderForeground);}.ds-input:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+    },
+    {
+      "name": "Source selector",
+      "kind": "input",
+      "refersTo": "source-select",
+      "description": "Native source selection.",
+      "html": "<label class=\"ds-source\">Sumber <select class=\"ds-select\"><option>Otomatis</option></select></label>",
+      "css": ".ds-source{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--vscode-descriptionForeground);}.ds-select{font:inherit;flex:1;min-width:80px;max-width:100%;padding:5px 6px;border:1px solid var(--vscode-input-border,transparent);border-radius:2px;color:var(--vscode-input-foreground);background:var(--vscode-input-background);}.ds-select:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+    },
+    {
+      "name": "Search result",
+      "kind": "button",
+      "refersTo": "search-result",
+      "description": "Title and muted metadata in a list row.",
+      "html": "<button class=\"ds-result\"><strong>Judul lagu</strong><span>Artis \u00b7 3:20 \u00b7 Sinkron</span></button>",
+      "css": ".ds-result{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;display:block;width:100%;padding:10px 6px;text-align:left;background:transparent;color:var(--vscode-foreground);border-bottom:1px solid var(--vscode-panel-border);}.ds-result strong,.ds-result span{display:block;overflow-wrap:anywhere;}.ds-result strong{font-weight:600;}.ds-result span{color:var(--vscode-descriptionForeground);margin-top:4px;font-size:12px;}.ds-result:hover{background:var(--vscode-list-hoverBackground);}.ds-result:active{filter:brightness(.95);}.ds-result:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+    },
+    {
+      "name": "Current lyric",
+      "kind": "custom",
+      "description": "Current synchronized line; state follows playback.",
+      "html": "<p class=\"ds-line\" aria-current=\"true\">Baris lirik saat ini</p>",
+      "css": ".ds-line{font-family:var(--vscode-font-family);margin:0;padding:8px 0;font-size:16px;line-height:1.65;overflow-wrap:anywhere;min-height:40px;color:var(--vscode-foreground);font-weight:600;text-decoration:underline;text-decoration-color:var(--vscode-textLink-foreground);text-underline-offset:6px;text-decoration-thickness:2px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Native VS Code reading surface",
+    "overview": "Operate mode is quiet, compact, and familiar. The sidebar inherits the user's VS Code theme. Metadata, source selection, and search establish context; lyrics receive the flexible reading space. The approved direction excludes artwork and playback controls.",
+    "keyCharacteristics": [
+      "Host-owned colors and typography.",
+      "Compact metadata, source selection, and search.",
+      "Lyrics as the primary reading surface.",
+      "Flat surfaces and visible keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The Host Theme Rule",
+        "body": "Preserve VS Code theme variables; do not introduce an independent light/dark palette or synthesized tonal ramps.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do inherit host theme colors and font family.",
+      "Do keep metadata and search compact so lyrics receive the flexible reading space.",
+      "Do retain labels, keyboard focus, text selection, wrapping, and high-contrast borders.",
+      "Do convey the current lyric with weight and underline as well as color.",
+      "Do respect reduced motion and pause following during manual reading."
+    ],
+    "donts": [
+      "Don't introduce artwork or playback controls into this sidebar.",
+      "Don't add an independent palette, decorative typeface, or shadows.",
+      "Don't turn lyric lines into cards or hide manual search behind another surface."
+    ]
+  }
+}

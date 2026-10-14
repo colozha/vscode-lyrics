@@ -1,0 +1,54 @@
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; height: 100vh; display: flex; flex-direction: column; color: var(--vscode-foreground); background: var(--vscode-sideBar-background); font-family: var(--vscode-font-family); font-size: var(--vscode-font-size, 13px); }
+header { padding: 20px 16px 16px; }
+h1 { font-size: 17px; line-height: 1.4; margin: 0 0 4px; font-weight: 600; overflow-wrap: anywhere; }
+p { margin: 0; line-height: 1.6; }
+#artist { color: var(--vscode-descriptionForeground); overflow-wrap: anywhere; }
+.source { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; font-size: 12px; }
+.source label, #playback { color: var(--vscode-descriptionForeground); }
+.source select { flex: 1; min-width: 80px; max-width: 100%; }
+button, input, select { font: inherit; border: 1px solid var(--vscode-input-border, transparent); border-radius: 2px; }
+button { cursor: pointer; padding: 5px 10px; color: var(--vscode-button-foreground); background: var(--vscode-button-background); line-height: 1.4; }
+button:hover { background: var(--vscode-button-hoverBackground); }
+button:active { filter: brightness(.95); }
+button:disabled { cursor: wait; opacity: .65; }
+button.secondary { color: var(--vscode-button-secondaryForeground); background: var(--vscode-button-secondaryBackground); }
+button.secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
+input, select { color: var(--vscode-input-foreground); background: var(--vscode-input-background); padding: 5px 6px; caret-color: var(--vscode-input-foreground); }
+input::placeholder { color: var(--vscode-input-placeholderForeground); }
+:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 2px; }
+::selection { background: var(--vscode-editor-selectionBackground); }
+.search { padding: 0 16px 16px; border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border)); }
+form label { display: block; margin-bottom: 6px; }
+.search-row { display: flex; gap: 6px; }
+.search-row input { min-width: 0; width: 100%; }
+#search-status { margin-top: 10px; color: var(--vscode-descriptionForeground); }
+#results { margin-top: 10px; max-height: 220px; overflow: auto; }
+.result { display: block; width: 100%; padding: 10px 6px; text-align: left; background: transparent; color: var(--vscode-foreground); border-bottom: 1px solid var(--vscode-panel-border); }
+.result:hover { background: var(--vscode-list-hoverBackground); }
+.result strong, .result span { display: block; overflow-wrap: anywhere; }
+.result strong { font-weight: 600; }
+.result span { color: var(--vscode-descriptionForeground); margin-top: 4px; font-size: 12px; }
+aside { padding: 12px 16px; border-bottom: 1px solid var(--vscode-panel-border); }
+aside p { margin-bottom: 8px; }
+#follow { margin-top: 10px; }
+.lyric-section { flex: 1; min-height: 80px; display: flex; flex-direction: column; }
+.lyric-toolbar { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 8px 16px; gap: 8px; }
+#lyric-type { color: var(--vscode-descriptionForeground); font-size: 12px; }
+.lyric-toolbar button { font-size: 12px; }
+#lyrics { overflow-y: auto; flex: 1; position: relative; padding: 0 16px 24px; scroll-behavior: auto; }
+#notice { padding: 18px 0; line-height: 1.7; color: var(--vscode-descriptionForeground); }
+#lines { padding-bottom: 35vh; }
+#lines:empty { padding: 0; }
+.line { margin: 0; padding: 8px 0; font-size: 16px; line-height: 1.65; color: var(--vscode-descriptionForeground); overflow-wrap: anywhere; min-height: 40px; }
+.line.active { color: var(--vscode-foreground); font-weight: 600; text-decoration: underline; text-decoration-color: var(--vscode-textLink-foreground); text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.plain { white-space: pre-wrap; font-size: 15px; line-height: 1.9; overflow-wrap: anywhere; }
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; padding: 9px 16px; border-top: 1px solid var(--vscode-panel-border); font-size: 11px; color: var(--vscode-descriptionForeground); }
+.link { padding: 0; background: transparent; color: var(--vscode-textLink-foreground); font-size: inherit; }
+.link:hover { background: transparent; text-decoration: underline; text-underline-offset: 3px; }
+* { scrollbar-width: thin; scrollbar-color: var(--vscode-scrollbarSlider-background) transparent; }
+body.vscode-high-contrast button, body.vscode-high-contrast-light button { border-color: var(--vscode-contrastBorder); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+@media (max-height: 420px) { header { padding-top: 10px; } .source { margin-top: 6px; } .search { padding-bottom: 10px; } }

@@ -1,0 +1,7 @@
+.vscode/**
+.impeccable/**
+test/**
+PRODUCT.md
+DESIGN.md
+package-lock.json
+.gitignore
