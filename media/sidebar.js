@@ -75,6 +75,9 @@ function render(full) {
   text('playback-status', playerStatus);
   $('refresh').disabled = !state.track?.title;
   text('mode', manual ? 'Manual lyrics' : 'Automatic lyrics');
+  const lyricsOvh = state.record?.source === 'lyrics.ovh';
+  text('attribution', lyricsOvh ? 'Lyrics by lyrics.ovh' : 'Lyrics by LRCLIB');
+  $('attribution').title = lyricsOvh ? 'Open lyrics.ovh' : 'Open LRCLIB';
   $('media-problem').hidden = !state.mediaError || Boolean(state.mediaUnsupported);
   text('media-error', state.mediaError || '');
   if (full) {
@@ -90,7 +93,7 @@ function render(full) {
     });
     $('results').replaceChildren(...results); $('results').hidden = !results.length;
   }
-  const key = JSON.stringify([state.status, state.record?.id, state.mode, state.error]);
+  const key = JSON.stringify([state.status, state.record?.id, state.record?.trackName, state.record?.artistName, state.record?.source, state.mode, state.error]);
   if (rendered !== key) {
     rendered = key; lastActive = -2; followScroll = true; $('scroll-follow').hidden = true;
     $('lines').replaceChildren(); $('lyrics').scrollTop = 0;
@@ -133,8 +136,8 @@ function updatePlaybackControls() {
   const playing = track?.status === 'Playing';
   $('play-toggle').setAttribute('aria-label', playing ? 'Pause' : 'Play');
   $('play-toggle').title = playing ? 'Pause' : 'Play';
-  $('play-icon').hidden = playing;
-  $('pause-icon').hidden = !playing;
+  $('play-icon').toggleAttribute('hidden', playing);
+  $('pause-icon').toggleAttribute('hidden', !playing);
   const length = Math.max(0, track?.duration || 0);
   $('seek').max = String(length);
   if (!seeking) $('seek').value = String(Math.min(length, currentPosition()));

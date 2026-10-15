@@ -1,6 +1,7 @@
 'use strict';
 
 const BASE = 'https://lrclib.net/api';
+const LYRICS_OVH = 'https://api.lyrics.ovh/v1';
 
 function cleanTitle(title, artist = '') {
   let result = String(title || '').replace(/\s*[\[(](?:official\s+)?(?:music\s+)?(?:video|audio|lyric(?:s| video)?|visuali[sz]er)(?:\s+official)?[\])]\s*/gi, ' ')
@@ -41,10 +42,13 @@ function activeLine(lines, position) {
 }
 
 const normalize = value => String(value || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const hasLyrics = record => Boolean(record && (record.instrumental
+  || [record.syncedLyrics, record.plainLyrics].some(text => typeof text === 'string' && text.trim())));
 function pickMatch(results, track) {
   const title = normalize(cleanTitle(track.title, track.artist));
   const artist = normalize(track.artist);
   return results.filter(item => normalize(item.trackName) === title && (!artist || normalize(item.artistName) === artist))
+    .filter(hasLyrics)
     .filter(item => !track.duration || Math.abs(item.duration - track.duration) <= 8)
     .sort((a, b) => (track.duration ? Math.abs(a.duration - track.duration) - Math.abs(b.duration - track.duration) : 0) || Number(Boolean(b.syncedLyrics)) - Number(Boolean(a.syncedLyrics)))[0] || null;
 }
@@ -79,12 +83,47 @@ class LyricsClient {
   async find(track, signal) {
     const title = cleanTitle(track.title, track.artist);
     if (!title) return null;
-    if (track.artist && track.duration) {
-      const exact = await this.request('get', { track_name: title, artist_name: track.artist, album_name: track.album || '', duration: Math.round(track.duration) }, signal);
-      if (exact) return exact;
+    const artist = String(track.artist || '').trim();
+    let primaryError;
+    try {
+      if (artist && track.duration) {
+        const exact = await this.request('get', { track_name: title, artist_name: artist, album_name: track.album || '', duration: Math.round(track.duration) }, signal);
+        if (hasLyrics(exact)) return { ...exact, source: 'lrclib' };
+      }
+      const results = await this.request('search', { track_name: title, ...(artist ? { artist_name: artist } : {}) }, signal) || [];
+      const match = pickMatch(results, track);
+      if (match) return { ...match, source: 'lrclib' };
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      primaryError = error;
     }
-    const results = await this.request('search', { track_name: title, ...(track.artist ? { artist_name: track.artist } : {}) }, signal) || [];
-    return pickMatch(results, track);
+
+    if (!artist) {
+      if (primaryError) throw primaryError;
+      return null;
+    }
+    try {
+      const url = `${LYRICS_OVH}/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+      const response = await this.fetcher(url, {
+        headers: { 'User-Agent': 'VSCodeLyrics/0.1.0' },
+        ...(this.dispatcher ? { dispatcher: this.dispatcher } : {}),
+        signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(12000)]) : AbortSignal.timeout(12000)
+      });
+      if (response.status !== 404) {
+        if (!response.ok) throw new Error(response.status === 429 ? 'Too many requests. Wait a moment, then try again.' : `Lyrics service error (HTTP ${response.status}).`);
+        const data = await response.json();
+        if (!data || typeof data.lyrics !== 'string') throw new Error('The lyrics service returned an invalid response.');
+        if (data.lyrics.trim()) return {
+          trackName: title, artistName: artist, duration: Number.isFinite(track.duration) ? track.duration : 0,
+          plainLyrics: data.lyrics, syncedLyrics: null, source: 'lyrics.ovh'
+        };
+      }
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      if (!primaryError) throw error;
+    }
+    if (primaryError) throw primaryError;
+    return null;
   }
 }
 function validRecord(value) {

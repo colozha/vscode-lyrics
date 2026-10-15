@@ -1,6 +1,6 @@
 # LyricFlow: Lyrics for VS Code
 
-Read song lyrics in the VS Code sidebar. On Linux, the extension reads player metadata through D-Bus/MPRIS and finds lyrics on [LRCLIB](https://lrclib.net). Manual search works on Linux, Windows, and macOS; automatic player detection is currently Linux-only.
+Read song lyrics in the VS Code sidebar. On Linux, the extension reads player metadata through D-Bus/MPRIS and finds lyrics on [LRCLIB](https://lrclib.net), with [lyrics.ovh](https://lyrics.ovh) as a plain-lyrics fallback. Manual search works on Linux, Windows, and macOS; automatic player detection is currently Linux-only.
 
 ## Run from source
 
@@ -27,7 +27,7 @@ The extension UI and manual lyrics search work on Linux, Windows, and macOS. Aut
 
 Incorrect or missing titles, artist metadata, and live/remix versions can prevent a match. Use manual search to select the right version. Players that do not provide a position cannot synchronize lyrics. If several sources are active, automatic selection keeps following the current active source; choose a source manually when needed.
 
-Track title, artist, album, duration, and search queries are sent over HTTPS to LRCLIB. The extension has no telemetry, account tokens, search history, or proxy server. A cache of up to 100 responses is kept in session memory. Lyrics come from LRCLIB; availability, accuracy, and rights follow the source and rights holders. Attribution is available in the sidebar footer.
+Track title, artist, album, duration, and manual search queries are sent over HTTPS to LRCLIB. For automatic lookup, title and available artist metadata are also sent to lyrics.ovh if LRCLIB has no usable lyrics or its request fails. The extension has no telemetry, account tokens, search history, or proxy server. A cache of up to 100 LRCLIB responses is kept in session memory. lyrics.ovh provides plain lyrics; availability, accuracy, and rights follow each source and the rights holders. Attribution is available in the sidebar footer.
 
 ## Test and package
 
@@ -43,7 +43,7 @@ The package is written to `vscode-lyrics-0.1.0.vsix`. Install it through **Exten
 code --install-extension ./vscode-lyrics-0.1.0.vsix
 ```
 
-Unit tests use `node:test` for LRC parsing, D-Bus metadata and player control, source selection, lyric matching, HTTP/cache behavior, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
+Unit tests use `node:test` for LRC parsing, D-Bus metadata and player control, source selection, lyric matching, HTTP/cache behavior, lyrics fallback, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
 
 ## Project structure
 

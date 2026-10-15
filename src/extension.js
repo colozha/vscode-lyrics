@@ -77,7 +77,7 @@ function activate(context) {
             if (['previous', 'playPause', 'next'].includes(message.action)) void media.control(message.action).catch(() => {});
             else if (message.action === 'seek' && typeof message.position === 'number' && Number.isFinite(message.position)) void media.control('seek', message.position).catch(() => {});
             break;
-          case 'attribution': void vscode.env.openExternal(vscode.Uri.parse('https://lrclib.net')); break;
+          case 'attribution': void vscode.env.openExternal(vscode.Uri.parse(session.state.record?.source === 'lyrics.ovh' ? 'https://lyrics.ovh' : 'https://lrclib.net')); break;
         }
       });
       const visibility = view.onDidChangeVisibility(() => media.setVisible(view.visible));

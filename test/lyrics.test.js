@@ -99,10 +99,87 @@ test('HTTP exact lookup falls back to search, caches, and reports invalid/error 
   const urls = [];
   const client = new LyricsClient(async url => { urls.push(url); return url.includes('/get?') ? { status: 404 } : { status: 200, ok: true, json: async () => [record] }; });
   assert.equal((await client.find(track)).id, 1);
+  assert.equal((await client.find(track)).source, 'lrclib');
   assert.equal((await client.find(track)).id, 1);
   assert.equal(urls.filter(url => url.includes('/search?')).length, 1);
+  assert.equal(urls.some(url => url.includes('api.lyrics.ovh')), false);
   await assert.rejects(() => new LyricsClient(async () => ({ status: 429 })).search('x'), /Too many requests/);
   await assert.rejects(() => new LyricsClient(async () => ({ status: 200, ok: true, json: async () => ({ bad: true }) })).search('x'), /invalid response/);
+});
+test('lyrics.ovh supplies plain lyrics after LRCLIB miss and encodes path segments', async () => {
+  const urls = [];
+  const client = new LyricsClient(async url => {
+    urls.push(url);
+    if (url.includes('api.lyrics.ovh')) return { status: 200, ok: true, json: async () => ({ lyrics: 'Fallback words' }) };
+    return url.includes('/get?') ? { status: 404 } : { status: 200, ok: true, json: async () => [] };
+  });
+  const result = await client.find({ ...track, artist: 'AC/DC & X', title: 'Rock / Roll' });
+  assert.match(urls.at(-1), /api\.lyrics\.ovh\/v1\/AC%2FDC%20%26%20X\/Rock%20%2F%20Roll$/);
+  assert.deepEqual(result, {
+    trackName: 'Rock / Roll', artistName: 'AC/DC & X', duration: track.duration,
+    plainLyrics: 'Fallback words', syncedLyrics: null, source: 'lyrics.ovh'
+  });
+});
+test('lyrics.ovh is tried after LRCLIB errors, but not after cancellation or without an artist', async () => {
+  const urls = [];
+  const fallback = new LyricsClient(async url => {
+    urls.push(url);
+    if (url.includes('api.lyrics.ovh')) return { status: 200, ok: true, json: async () => ({ lyrics: 'Fallback words' }) };
+    throw new Error('offline');
+  });
+  assert.equal((await fallback.find(track)).source, 'lyrics.ovh');
+
+  const noArtist = [];
+  const withoutArtist = new LyricsClient(async url => { noArtist.push(url); return url.includes('api.lyrics.ovh') ? assert.fail('unexpected fallback') : { status: 200, ok: true, json: async () => [] }; });
+  assert.equal(await withoutArtist.find({ ...track, artist: '' }), null);
+  assert.equal(noArtist.some(url => url.includes('api.lyrics.ovh')), false);
+
+  const controller = new AbortController(); controller.abort();
+  const cancelled = [];
+  const aborted = new LyricsClient(async (url, options) => { cancelled.push(url); return Promise.reject(options.signal.reason); });
+  await assert.rejects(() => aborted.find(track, controller.signal));
+  assert.equal(cancelled.some(url => url.includes('api.lyrics.ovh')), false);
+});
+test('lyrics.ovh 404 and empty lyrics are misses; exhausted providers preserve errors', async () => {
+  for (const response of [
+    { status: 404 },
+    { status: 200, ok: true, json: async () => ({ lyrics: '  ' }) }
+  ]) {
+    const client = new LyricsClient(async url => url.includes('api.lyrics.ovh') ? response
+      : url.includes('/get?') ? { status: 404 } : { status: 200, ok: true, json: async () => [] });
+    assert.equal(await client.find(track), null);
+  }
+
+  const failed = new LyricsClient(async url => {
+    if (url.includes('api.lyrics.ovh')) return { status: 503, ok: false };
+    throw new Error('LRCLIB offline');
+  });
+  await assert.rejects(() => failed.find(track), /LRCLIB offline/);
+});
+test('automatic session displays fallback lyrics as plain and handles exhausted providers', async () => {
+  const fallback = new LyricsSession({ find: async () => ({
+    trackName: track.title, artistName: track.artist, duration: track.duration,
+    plainLyrics: 'Fallback words', syncedLyrics: null, source: 'lyrics.ovh'
+  }) });
+  fallback.state.track = track;
+  await fallback.follow();
+  assert.equal(fallback.state.status, 'ready');
+  assert.deepEqual(fallback.state.lines, []);
+  assert.equal(fallback.state.record.source, 'lyrics.ovh');
+  fallback.dispose();
+
+  const missing = new LyricsSession({ find: async () => null });
+  missing.state.track = track;
+  await missing.follow();
+  assert.equal(missing.state.status, 'missing');
+  missing.dispose();
+
+  const failed = new LyricsSession({ find: async () => { throw new Error('Both lyric services failed'); } });
+  failed.state.track = track;
+  await failed.follow();
+  assert.equal(failed.state.status, 'error');
+  assert.match(failed.state.error, /Both lyric services failed/);
+  failed.dispose();
 });
 test('Stale lyric response cannot replace new song; manual returns to auto only on song change', async () => {
   const pending = [];
