@@ -9,22 +9,39 @@ const MPRIS_XML = `<node>
     <method name="Get"><arg type="s" direction="in"/><arg type="s" direction="in"/><arg type="v" direction="out"/></method>
     <signal name="PropertiesChanged"><arg type="s"/><arg type="a{sv}"/><arg type="as"/></signal>
   </interface>
-  <interface name="org.mpris.MediaPlayer2.Player"><signal name="Seeked"><arg type="x"/></signal></interface>
+  <interface name="org.mpris.MediaPlayer2.Player">
+    <method name="Next"/>
+    <method name="Previous"/>
+    <method name="PlayPause"/>
+    <method name="Seek"><arg type="x" direction="in"/></method>
+    <method name="SetPosition"><arg type="o" direction="in"/><arg type="x" direction="in"/></method>
+    <signal name="Seeked"><arg type="x"/></signal>
+  </interface>
 </node>`;
 const unwrap = value => value && typeof value === 'object' && 'value' in value ? unwrap(value.value) : value;
+const flag = value => unwrap(value) === true;
 const seconds = value => { const number = Number(unwrap(value)); return Number.isFinite(number) ? Math.max(0, number / 1e6) : 0; };
 
 function snapshot(name, properties) {
   const metadata = unwrap(properties.Metadata) || {};
+  const trackId = String(unwrap(metadata['mpris:trackid']) || '');
+  const duration = seconds(metadata['mpris:length']);
+  const canControl = flag(properties.CanControl);
   return {
     id: name, name: name.slice(PREFIX.length),
-    trackId: String(unwrap(metadata['mpris:trackid']) || ''),
+    trackId,
     title: String(unwrap(metadata['xesam:title']) || ''),
     artist: Array.isArray(unwrap(metadata['xesam:artist'])) ? unwrap(metadata['xesam:artist']).map(String).join(', ') : String(unwrap(metadata['xesam:artist']) || ''),
     album: String(unwrap(metadata['xesam:album']) || ''),
-    duration: seconds(metadata['mpris:length']), position: seconds(properties.Position),
+    duration, position: seconds(properties.Position),
     status: unwrap(properties.PlaybackStatus) || 'Stopped',
-    rate: Number(unwrap(properties.Rate) ?? 1)
+    rate: Number(unwrap(properties.Rate) ?? 1),
+    capabilities: {
+      previous: canControl && flag(properties.CanGoPrevious),
+      playPause: canControl && (flag(properties.CanPlay) || flag(properties.CanPause)),
+      next: canControl && flag(properties.CanGoNext),
+      seek: canControl && flag(properties.CanSeek) && duration > 0 && Boolean(trackId)
+    }
   };
 }
 function choosePlayer(players, currentId, preferredId = '') {
@@ -36,7 +53,10 @@ function choosePlayer(players, currentId, preferredId = '') {
 class MediaMonitor extends EventEmitter {
   constructor() { super(); this.players = new Map(); this.selected = ''; this.preferred = ''; this.disposed = false; this.visible = false; this.discovery = new Map(); }
   async start() {
-    if (process.platform !== 'linux') { this.emit('problem', 'Deteksi otomatis tersedia di Linux. Gunakan pencarian manual.'); return; }
+    if (process.platform !== 'linux') {
+      this.emit('problem', { message: 'Automatic player detection is unavailable on this OS. Use Search to find lyrics manually.', unsupported: true });
+      return;
+    }
     try {
       const dbus = require('dbus-next');
       this.bus = dbus.sessionBus();
@@ -53,13 +73,13 @@ class MediaMonitor extends EventEmitter {
       this.daemon.on('NameOwnerChanged', this.ownerChanged);
       const names = await this.daemon.ListNames();
       await Promise.all(names.filter(name => name.startsWith(PREFIX)).map(name => this.add(name)));
-      if (!this.disposed) { this.emit('problem', ''); this.publish(); }
+      if (!this.disposed) { this.emit('problem', { message: '', unsupported: false }); this.publish(); }
     } catch { this.fail(); }
   }
   fail() {
     if (this.disposed) return;
     this.stopConnection();
-    this.emit('problem', 'Tidak dapat terhubung ke D-Bus sesi desktop. Coba sambungkan ulang atau cari lirik manual.');
+    this.emit('problem', { message: 'Could not connect to the desktop media session. Reconnect or search for lyrics manually.', unsupported: false });
     this.publish();
   }
   async add(name) {
@@ -100,6 +120,32 @@ class MediaMonitor extends EventEmitter {
     this.publish();
   }
   select(id) { this.preferred = id; this.publish(); }
+  async control(action, position) {
+    const name = this.selected;
+    const entry = this.players.get(name);
+    if (!entry) return false;
+    const track = snapshot(name, entry.values);
+    switch (action) {
+      case 'previous':
+        if (!track.capabilities.previous) return false;
+        await entry.player.Previous();
+        return true;
+      case 'playPause':
+        if (!track.capabilities.playPause) return false;
+        await entry.player.PlayPause();
+        return true;
+      case 'next':
+        if (!track.capabilities.next) return false;
+        await entry.player.Next();
+        return true;
+      case 'seek':
+        if (!track.capabilities.seek || !Number.isFinite(position)) return false;
+        await entry.player.SetPosition(track.trackId, BigInt(Math.round(Math.min(track.duration, Math.max(0, position)) * 1e6)));
+        return true;
+      default:
+        return false;
+    }
+  }
   publish() {
     if (this.disposed) return;
     const players = [...this.players].map(([name, entry]) => snapshot(name, entry.values));

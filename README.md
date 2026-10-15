@@ -1,33 +1,35 @@
-# Lyrics untuk VS Code
+# LyricFlow: Lyrics for VS Code
 
-Lirik lagu di sidebar saat Anda bekerja. Extension membaca metadata player Linux melalui D-Bus/MPRIS dan mencari lirik di [LRCLIB](https://lrclib.net). Mendukung lirik sinkron dan pencarian manual, tanpa akun atau API key.
+Read song lyrics in the VS Code sidebar. On Linux, the extension reads player metadata through D-Bus/MPRIS and finds lyrics on [LRCLIB](https://lrclib.net). Manual search works on Linux, Windows, and macOS; automatic player detection is currently Linux-only.
 
-## Menjalankan dari source
+## Run from source
 
-1. Buka direktori ini di VS Code desktop.
-2. Jalankan `npm ci --omit=optional` (Node.js 22 atau lebih baru untuk tooling).
-3. Tekan **F5**, pilih **Jalankan Lyrics**.
-4. Pada jendela Extension Development Host, klik ikon **Lyrics** di Activity Bar, atau jalankan **Lyrics: Buka Sidebar** dari Command Palette.
-5. Putar lagu di Brave, Firefox, Spotify, VLC, atau player lain yang menyediakan MPRIS.
+1. Open this folder in VS Code desktop.
+2. Run `npm ci --omit=optional` (Node.js 22 or later for tooling).
+3. Press **F5** and choose **Run Lyrics**.
+4. In the Extension Development Host window, click **Lyrics** in the Activity Bar or run **Lyrics: Open Sidebar** from the Command Palette.
+5. On Linux, play music in a browser or player that publishes an MPRIS session, such as Brave, Firefox, Spotify, or VLC.
 
-Tidak memerlukan `playerctl`. VS Code harus berjalan pada sesi desktop Linux yang sama dengan player, dengan session D-Bus dapat diakses. Pada Remote SSH/WSL/Dev Containers, extension berjalan pada sisi UI lokal; deteksi otomatis memerlukan komputer UI Linux.
+The extension does not require `playerctl`. For automatic detection, VS Code must run in the same Linux desktop session as the player and be able to access the session D-Bus. In Remote SSH, WSL, or Dev Containers, the extension runs on the local UI side, so automatic detection requires that UI host to be Linux.
 
-## Penggunaan
+## Use
 
-- **Otomatis** memilih player yang sedang memutar lagu. Gunakan **Sumber** untuk memilih player tertentu.
-- Lirik dengan timestamp menyorot baris aktif mengikuti posisi lagu. Pause/resume dan seek mengikuti informasi dari player.
-- Gulir lirik sendiri untuk menghentikan gulir otomatis. Tekan **Ikuti lirik** untuk melanjutkan.
-- Masukkan judul atau artis pada **Cari lirik**, lalu pilih hasil. Pilihan manual menampilkan teks tanpa sinkronisasi.
-- Pilihan manual bertahan sampai lagu di sumber terpilih berganti. Tekan **Ikuti pemutar** untuk kembali lebih awal.
-- **Coba lagi** mengulang pengambilan lirik. **Sambungkan ulang** mencoba koneksi D-Bus kembali.
+- The **Player** selector in the footer chooses a media source. **Automatic** follows the active source.
+- When the source exposes them, **Previous**, **Play/Pause**, **Next**, and **Seek** control playback. Unsupported actions are disabled.
+- Timestamped lyrics highlight the current line and follow playback. Scroll the lyrics to pause following, then select **Follow lyrics** to resume.
+- Select **Search** in the header to open manual lyrics search. Search by title or artist and choose a result.
+- A manually selected lyric stays active until the selected player changes. **Refresh** returns to automatic lyrics for the current player.
+- **Reconnect** retries the Linux media session connection when it fails.
 
-## Batas dukungan dan privasi
+## Support and privacy
 
-Deteksi otomatis versi pertama hanya Linux. Browser/situs harus membagikan metadata MPRIS; extension tidak membaca tab, merekam suara, atau mengenali audio. Judul video, artis yang keliru, serta perbedaan versi live/remix dapat menyebabkan lirik tidak ditemukan. Gunakan pencarian manual untuk memilih versi yang benar. Player tanpa informasi posisi tidak menjamin sinkronisasi lirik. Saat beberapa player memutar bersamaan, pilihan otomatis mempertahankan sumber yang masih aktif; pilih sumber secara manual bila diperlukan.
+The extension UI and manual lyrics search work on Linux, Windows, and macOS. Automatic player detection and playback controls currently use Linux MPRIS only. A browser or player is detected when it publishes a compatible MPRIS session; the extension does not inspect browser tabs, record audio, or recognize songs. Windows and macOS show disabled player controls and keep manual search available.
 
-Judul, artis, album, durasi atau kueri pencarian dikirim melalui HTTPS ke LRCLIB untuk mencari lirik. Tidak ada telemetry, token akun, penyimpanan riwayat, atau server perantara. Cache maksimal 100 respons hanya berada di memori sesi. Lirik bersumber dari LRCLIB; ketersediaan, ketepatan, dan hak atas konten mengikuti sumber/pemegang hak. Atribusi tersedia di footer sidebar.
+Incorrect or missing titles, artist metadata, and live/remix versions can prevent a match. Use manual search to select the right version. Players that do not provide a position cannot synchronize lyrics. If several sources are active, automatic selection keeps following the current active source; choose a source manually when needed.
 
-## Pengujian dan paket
+Track title, artist, album, duration, and search queries are sent over HTTPS to LRCLIB. The extension has no telemetry, account tokens, search history, or proxy server. A cache of up to 100 responses is kept in session memory. Lyrics come from LRCLIB; availability, accuracy, and rights follow the source and rights holders. Attribution is available in the sidebar footer.
+
+## Test and package
 
 ```sh
 npm test
@@ -35,19 +37,19 @@ npm run check
 npm run package
 ```
 
-Hasil: `vscode-lyrics-0.1.0.vsix` di direktori ini. Pasang melalui **Extensions → … → Install from VSIX…**, atau:
+The package is written to `vscode-lyrics-0.1.0.vsix`. Install it through **Extensions → … → Install from VSIX…**, or run:
 
 ```sh
 code --install-extension ./vscode-lyrics-0.1.0.vsix
 ```
 
-Pengujian memakai `node:test` untuk parser LRC, metadata D-Bus, pemilihan sumber, pencocokan lirik, cache/HTTP, pencarian manual, dan respons pencarian kedaluwarsa. Pengujian unit tidak memerlukan player, VS Code, atau internet. Verifikasi UI dilakukan pada Extension Development Host; perubahan playback dilakukan melalui player asli.
+Unit tests use `node:test` for LRC parsing, D-Bus metadata and player control, source selection, lyric matching, HTTP/cache behavior, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
 
-## Struktur
+## Project structure
 
-- `src/`: integrasi VS Code, D-Bus, layanan lirik, dan state sesi.
-- `media/`: ikon Activity Bar dan sidebar HTML/CSS/JavaScript (HTML dibuat oleh provider).
-- `test/`: pengujian logika dengan Node.js.
-- `.vscode/launch.json`: konfigurasi debug F5.
+- `src/`: VS Code integration, D-Bus, lyrics service, and session state.
+- `media/`: Activity Bar icon and sidebar HTML/CSS/JavaScript.
+- `test/`: Node.js logic tests.
+- `.vscode/launch.json`: F5 debug configuration.
 
-Tidak ada framework frontend atau proses build aplikasi. `dbus-next` membaca media; `undici` mengatur koneksi HTTP per klien agar percobaan alamat IP tidak terlalu singkat. Keduanya dependensi runtime; `@vscode/vsce` hanya tooling pengemasan.
+There is no frontend framework or app build step. `dbus-next` reads media; `undici` manages per-client HTTP connections. Both are runtime dependencies; `@vscode/vsce` is only used for packaging.

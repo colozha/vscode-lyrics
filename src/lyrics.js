@@ -68,9 +68,9 @@ class LyricsClient {
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(12000)]) : AbortSignal.timeout(12000)
     });
     if (response.status === 404) return null;
-    if (!response.ok) throw new Error(response.status === 429 ? 'Terlalu banyak permintaan. Tunggu sebentar, lalu coba lagi.' : `Layanan lirik bermasalah (HTTP ${response.status}).`);
+    if (!response.ok) throw new Error(response.status === 429 ? 'Too many requests. Wait a moment, then try again.' : `Lyrics service error (HTTP ${response.status}).`);
     const data = await response.json();
-    if (path === 'search' ? !Array.isArray(data) || !data.every(validRecord) : !validRecord(data)) throw new Error('Respons layanan lirik tidak valid.');
+    if (path === 'search' ? !Array.isArray(data) || !data.every(validRecord) : !validRecord(data)) throw new Error('The lyrics service returned an invalid response.');
     this.cache.set(url, data);
     if (this.cache.size > 100) this.cache.delete(this.cache.keys().next().value);
     return data;

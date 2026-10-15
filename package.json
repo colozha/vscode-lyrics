@@ -1,7 +1,7 @@
 {
   "name": "vscode-lyrics",
-  "displayName": "Lyrics",
-  "description": "Lirik otomatis dari player Linux dan browser, langsung di sidebar VS Code.",
+  "displayName": "LyricFlow: Lyrics for VS Code",
+  "description": "Lyrics in the VS Code sidebar, with automatic Linux media detection and manual search across desktop platforms.",
   "version": "0.1.0",
   "publisher": "husain",
   "license": "MIT",
@@ -40,7 +40,7 @@
     "commands": [
       {
         "command": "lyrics.focus",
-        "title": "Lyrics: Buka Sidebar"
+        "title": "Lyrics: Open Sidebar"
       }
     ]
   },

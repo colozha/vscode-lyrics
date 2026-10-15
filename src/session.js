@@ -6,7 +6,7 @@ const identity = track => track ? [track.id, track.trackId, track.title, track.a
 class LyricsSession extends EventEmitter {
   constructor(client) {
     super(); this.client = client; this.generation = 0;
-    this.state = { track: null, players: [], preferred: '', mode: 'auto', status: 'waiting', record: null, lines: [], results: [], searching: false, searchError: '', mediaError: '', error: '' };
+    this.state = { track: null, players: [], preferred: '', mode: 'auto', status: 'waiting', record: null, lines: [], results: [], searching: false, searchError: '', mediaError: '', mediaUnsupported: false, error: '' };
   }
   publish() { this.emit('update', this.state); }
   updateMedia({ track, players, preferred }) {
@@ -40,7 +40,7 @@ class LyricsSession extends EventEmitter {
       this.setRecord(record);
     } catch (error) {
       if (generation !== this.generation) return;
-      Object.assign(this.state, { status: 'error', error: error.name === 'TimeoutError' ? 'Pencarian terlalu lama. Periksa koneksi, lalu coba lagi.' : 'Lirik tidak dapat dimuat. ' + error.message });
+      Object.assign(this.state, { status: 'error', error: error.name === 'TimeoutError' ? 'Lyrics search timed out. Check your connection and try again.' : 'Lyrics could not be loaded. ' + error.message });
     }
     this.publish();
   }
@@ -52,10 +52,10 @@ class LyricsSession extends EventEmitter {
       const results = await this.client.search(query, controller.signal);
       if (controller !== this.searchController) return;
       this.state.results = results;
-      if (!results.length) this.state.searchError = 'Tidak ada hasil. Coba judul dan nama artis.';
+      if (!results.length) this.state.searchError = 'No results. Try the song title and artist.';
     } catch (error) {
       if (controller !== this.searchController) return;
-      this.state.searchError = 'Pencarian gagal. Periksa koneksi dan coba lagi.';
+      this.state.searchError = 'Search failed. Check your connection and try again.';
     }
     this.state.searching = false; this.publish();
   }

@@ -5,7 +5,7 @@
 web
 
 ## Stack
-JavaScript CommonJS extension host and native HTML/CSS/JavaScript WebviewView, chosen by the user. VS Code desktop on Linux. D-Bus via dbus-next, HTTPS via undici fetch with a per-client connection dispatcher (isolated from VS Code fetch patching). No frontend framework.
+JavaScript CommonJS extension host and native HTML/CSS/JavaScript WebviewView. The extension UI and manual search run in VS Code desktop on Linux, Windows, and macOS. Automatic player detection uses Linux D-Bus/MPRIS through dbus-next. HTTPS uses undici fetch with a per-client connection dispatcher. No frontend framework.
 
 ## Users
 Developers reading lyrics while working in VS Code, with music playing in a desktop application or browser.
@@ -14,10 +14,10 @@ Developers reading lyrics while working in VS Code, with music playing in a desk
 Automatically identify the current song through system metadata and display internet lyrics in a sidebar, while retaining manual search.
 
 ## Operating Context
-Local Linux desktop session, including a local UI connected to a remote workspace. Browser/player must expose MPRIS. Windows and macOS automatic detection are outside v1.
+VS Code desktop, including a local UI connected to a remote workspace. On Linux, the player must expose MPRIS and run in the UI host's desktop session. Windows and macOS support manual lyrics search but do not provide automatic player detection in the single-extension distribution.
 
 ## Capabilities and Constraints
-Timestamped lyrics follow playback, plain lyrics remain readable. Manual selection is replaced on the next selected-source track change. No artwork, playback controls, browser extension, audio recognition, or telemetry. LRCLIB is the only provider; song metadata/search queries are sent to it. Cache is memory-only and bounded.
+Timestamped lyrics follow playback; plain lyrics remain readable. Linux MPRIS sources expose Previous, Play/Pause, Next, and Seek when supported by the player. Manual lyrics remain selected until the selected source changes; Refresh returns to automatic lyrics. Search is collapsed by default and opened from the header. No artwork, browser companion, audio recognition, or telemetry. LRCLIB is the only provider; song metadata and search queries are sent to it. Cache is memory-only and bounded.
 
 ## Product Principles
 - Keep lyrics primary and native VS Code controls familiar.
@@ -26,4 +26,4 @@ Timestamped lyrics follow playback, plain lyrics remain readable. Manual selecti
 - Keep dependencies and project structure small.
 
 ## Accessibility & Inclusion
-Indonesian UI, keyboard access, VS Code theme variables including high contrast, visible focus, reduced-motion support. Active lyric conveyed by weight and underline as well as color.
+English UI, keyboard access, VS Code theme variables including high contrast, visible focus, reduced-motion support. Playback controls expose action labels and disable unsupported actions. Active lyrics are conveyed by weight and underline as well as color.

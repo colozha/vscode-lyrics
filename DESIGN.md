@@ -1,6 +1,6 @@
 ---
 name: VS Code Lyrics
-description: A quiet, native sidebar for reading lyrics while working.
+description: A compact, native sidebar for reading lyrics and controlling available playback while working.
 colors:
   foreground: "var(--vscode-foreground)"
   muted: "var(--vscode-descriptionForeground)"
@@ -98,11 +98,12 @@ components:
 
 **Creative North Star: "Native VS Code reading surface"**
 
-Operate mode is quiet, compact, and familiar. The sidebar inherits the user's VS Code theme. Metadata, source selection, and search establish context; lyrics receive the flexible reading space. The approved direction excludes artwork and playback controls.
+Operate mode is quiet, compact, and familiar. The sidebar inherits the user's VS Code theme. Track metadata and compact playback controls establish context; lyrics receive the flexible reading space. Manual search starts collapsed behind a header action, and player selection lives in the footer.
 
 **Key Characteristics:**
 - Host-owned colors and typography.
-- Compact metadata, source selection, and search.
+- Compact metadata and playback controls.
+- Search is available from the header and starts collapsed.
 - Lyrics as the primary reading surface.
 - Flat surfaces and visible keyboard focus.
 
@@ -124,7 +125,7 @@ Use the host font family throughout. Frontmatter records the implemented title, 
 
 ## Layout
 
-A viewport-height flex column places metadata above search, contextual connection recovery, the flexible lyric region, and the footer. Shared horizontal insets align these regions. Source controls and footer content wrap; the search input shrinks beside its button. There is no width breakpoint.
+A viewport-height flex column places metadata and playback controls above optional search, contextual connection recovery, the flexible lyric region, and the footer. Shared horizontal insets align these regions. The player selector and footer content wrap; the search input shrinks beside its button. There is no width breakpoint.
 
 Results scroll within a bounded region (maximum height 220px). Lyrics scroll independently with a minimum region height (80px); synchronized content retains trailing reading room (35vh). The lyric toolbar has a minimum height (44px). At viewport heights of 420px and below, header and search spacing compress.
 
@@ -140,11 +141,15 @@ Controls use the small control radius and thin borders (1px). Keyboard focus use
 
 ### Buttons
 
-Primary buttons serve search and retry; secondary buttons serve reconnect and following. Both use host colors and compact padding. Hover changes the host background; pressing dims the button. Disabled search reduces opacity and uses a waiting cursor. Attribution is a text-style button with a hover underline. All retain visible keyboard focus.
+Primary buttons serve search; secondary buttons serve transport, refresh, reconnect, and following. Buttons use host colors and compact padding. Hover changes the host background; pressing dims the button. Disabled controls reduce opacity; a disabled search button uses a waiting cursor while a request is active. Attribution is a text-style button with a hover underline. All retain visible keyboard focus.
 
 ### Inputs / Fields
 
-Search and native source selection share host input colors, a thin border, and the control radius. Search has a visible label and muted placeholder. Source selection has a minimum width (80px), wrapping with its label and playback status when necessary.
+Search and native source selection share host input colors, a thin border, and the control radius. Search has a visible label and muted placeholder. Search starts hidden and opens from a header toggle with keyboard focus moved to the query field. The footer source selector has a minimum width (70px), wrapping with its label and playback status when necessary.
+
+### Playback Controls
+
+Previous, Play/Pause, Next, and a seek slider sit directly below the title and artist. Each action is disabled when the current source does not advertise that capability. On operating systems without a supported source, controls remain visible and disabled while manual search remains available. Time values use tabular numerals.
 
 ### Search Results
 
@@ -154,18 +159,18 @@ Full-width result buttons have a bottom divider, semibold title, and muted artis
 
 Synchronized lines have vertical padding and a minimum height (40px). The current line uses weight and an underline (2px thickness, 6px offset) as well as color, with matching `aria-current`. Manual scrolling pauses following; a contextual button resumes it. Automatic scrolling is smooth unless reduced motion is requested. There is no entrance animation.
 
-Waiting, loading, missing lyrics, instrumental tracks, and errors use contextual Indonesian text and applicable recovery actions. Loading marks the lyric region busy.
+Waiting, loading, missing lyrics, instrumental tracks, and errors use contextual English text and applicable recovery actions. Loading marks the lyric region busy.
 
 ## Do's and Don'ts
 
 ### Do:
 - Do inherit host theme colors and font family.
-- Do keep metadata and search compact so lyrics receive the flexible reading space.
+- Do keep metadata, playback controls, and optional search compact so lyrics receive the flexible reading space.
 - Do retain labels, keyboard focus, text selection, wrapping, and high-contrast borders.
 - Do convey the current lyric with weight and underline as well as color.
 - Do respect reduced motion and pause following during manual reading.
 
 ### Don't:
-- Don't introduce artwork or playback controls into this sidebar.
+- Don't introduce artwork into this sidebar.
 - Don't add an independent palette, decorative typeface, or shadows.
-- Don't turn lyric lines into cards or hide manual search behind another surface.
+- Don't turn lyric lines into cards or make manual search unreachable from the header.
