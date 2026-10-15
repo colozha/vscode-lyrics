@@ -2,9 +2,24 @@
   "name": "vscode-lyrics",
   "displayName": "LyricFlow: Lyrics for VS Code",
   "description": "Lyrics in the VS Code sidebar, with automatic Linux media detection and manual search across desktop platforms.",
+  "keywords": [
+    "lyrics",
+    "music",
+    "mpris",
+    "lrclib"
+  ],
   "version": "0.1.0",
   "publisher": "husain",
   "license": "MIT",
+  "icon": "media/icon.png",
+  "homepage": "https://github.com/colozha/vscode-lyrics#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/colozha/vscode-lyrics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/colozha/vscode-lyrics/issues"
+  },
   "engines": {
     "vscode": "^1.99.0"
   },
