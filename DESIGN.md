@@ -31,12 +31,12 @@ colors:
 typography:
   title:
     fontFamily: "var(--vscode-font-family)"
-    fontSize: "22px"
+    fontSize: "16px"
     fontWeight: 600
     lineHeight: 1.3
   title-narrow:
     fontFamily: "var(--vscode-font-family)"
-    fontSize: "18px"
+    fontSize: "14px"
     fontWeight: 600
     lineHeight: 1.3
   body:
@@ -101,8 +101,8 @@ components:
     backgroundColor: "{colors.button-background}"
     textColor: "{colors.button-foreground}"
     rounded: "{rounded.circular}"
-    width: "44px"
-    height: "44px"
+    width: "32px"
+    height: "32px"
     padding: "0"
   button-secondary:
     backgroundColor: "transparent"
@@ -115,8 +115,8 @@ components:
     backgroundColor: "{colors.input-background}"
     textColor: "{colors.foreground}"
     rounded: "{rounded.input}"
-    width: "36px"
-    height: "36px"
+    width: "28px"
+    height: "28px"
     padding: "0"
   button-link:
     backgroundColor: "transparent"
@@ -166,12 +166,12 @@ components:
 
 The sidebar combines a compact music player with a flexible lyric reading surface. It inherits VS Code's theme and font, using artwork, outline controls, quiet separators, and a softly highlighted current row to establish track context without competing with the lyrics.
 
-The approved player composition is theme-adaptive: artwork sits beside title and artist, search stays open initially, and available playback controls remain visible. Source selection, playback status, lyric mode, attribution, reconnect, and paused-follow recovery retain their existing roles.
+The approved player composition is theme-adaptive: artwork sits beside title and artist, search is hidden initially, and available playback controls remain visible. Source selection, playback status, lyric mode, attribution, reconnect, and paused-follow recovery retain their existing roles.
 
 **Key Characteristics:**
 - Host-owned colors and typography.
 - Artwork and capability-aware outline playback controls.
-- Open search and timestamped lyric rows with source-provided headings.
+- Collapsible search and timestamped lyric rows with source-provided headings.
 - Flat surfaces, visible focus, and explicit high-contrast states.
 - Responsive reading space with reachable controls in short viewports.
 
@@ -193,9 +193,9 @@ Use the host font family throughout. The frontmatter owns the implemented hierar
 
 ## Layout
 
-A viewport-height flex column contains the track header, transport and progress, open search, contextual connection recovery, flexible lyric region, and two-row footer. The wide header uses artwork, flexible track copy, and actions in three columns. Artwork is square (96px); shared horizontal insets use the inset token. Search has a minimum height (40px). Results scroll within a bounded region (maximum `min(220px, 30vh)`).
+A viewport-height flex column contains the track header, transport and progress, optional search, contextual connection recovery, flexible lyric region, and two-row footer. The wide header uses artwork, flexible track copy, and actions in three columns. Artwork is square (96px); shared horizontal insets use the inset token. Search has a minimum height (40px). Results scroll within a bounded region (maximum `min(220px, 30vh)`).
 
-Below 480px, artwork becomes compact (64px) with the input radius, title and artist use their narrow roles, header actions stack (28px each), and progress moves below transport. Transport distributes across the width; Play/Pause remains circular (44px). At widths of 300px and below, horizontal insets shrink (12px), and the timestamp column narrows (42px to 36px). At heights of 420px and below, header, transport, search, lyric toolbar, and footer spacing compress. The body scrolls vertically when minimum content exceeds the viewport so controls remain reachable.
+Below 480px, artwork becomes compact (64px) with the input radius, title and artist use their narrow roles, header actions stack (28px each), and progress moves below transport. Transport distributes across the width. Transport and header buttons are 28px square with 16px icons; Play/Pause remains circular (32px) with an 18px icon. At widths of 300px and below, horizontal insets shrink (12px), and the timestamp column narrows (42px to 36px). At heights of 420px and below, header, transport, search, lyric toolbar, and footer spacing compress. The body scrolls vertically when minimum content exceeds the viewport so controls remain reachable.
 
 The lyric region has a minimum height (60px) and its own vertical scrolling; its toolbar is compact (36px minimum, 30px in short views). Synchronized rows use a fixed timestamp column and a flexible text column, with trailing reading room (35vh). Source headings align with lyric text. Footer rows and the Player selector wrap; the selector retains a minimum width (70px).
 
@@ -215,7 +215,7 @@ Outline SVG icons provide search, refresh, shuffle, previous, next, volume, and 
 
 ### Inputs / Fields
 
-Search is open initially and can be toggled from the header; reopening focuses its field. A search icon, expanding query input, and arrow submit action share one rounded input surface with an accessible label. Enter also submits. Search status and results appear below. The footer retains native Player selection. Seek and the optional Volume panel use native range inputs tinted with the accent; volume opens from its icon and Escape closes it and returns focus. Unsupported range actions stay disabled. Control failures appear as contextual recovery text.
+Search is hidden initially and can be toggled from the header; reopening focuses its field. A search icon, expanding query input, and arrow submit action share one rounded input surface with an accessible label. Enter also submits. Search status and results appear below. The footer retains native Player selection. Seek and the optional Volume panel use native range inputs tinted with the accent; volume opens from its icon and Escape closes it and returns focus. Unsupported range actions stay disabled. Control failures appear as contextual recovery text.
 
 ### Artwork and LIVE
 
@@ -235,7 +235,7 @@ Manual scrolling pauses following and exposes Follow lyrics. Automatic following
 
 ### Do:
 - Do inherit host theme colors and font family.
-- Do preserve the artwork, metadata, header actions, transport, open search, lyric region, and footer hierarchy.
+- Do preserve the artwork, metadata, header actions, transport, collapsible search, lyric region, and footer hierarchy.
 - Do retain accessible action labels, keyboard focus, text selection, wrapping, and high-contrast outlines.
 - Do convey the current lyric with row background, semibold weight, and aria-current as well as color.
 - Do respect reduced motion and pause following during manual reading.
@@ -243,6 +243,6 @@ Manual scrolling pauses following and exposes Follow lyrics. Automatic following
 
 ### Don't:
 - Don't add an independent light/dark palette, decorative typeface, or shadows.
-- Don't restore collapsed-by-default search or an underline-only current lyric.
+- Don't open search by default or use an underline-only current lyric.
 - Don't enable unsupported playback actions or imply that manual timestamped lyrics follow the player.
 - Don't clip controls or footer content in narrow or short views.

@@ -36,7 +36,7 @@ function activate(context) {
       </div>
       <div class="track-copy"><h1 id="title">Waiting for a track</h1><p id="artist">Play music on your desktop or in a browser.</p><span id="live-badge" hidden>LIVE</span></div>
       <div class="header-actions">
-        <button id="search-toggle" class="icon-button secondary" type="button" aria-label="Hide search" title="Hide search" aria-controls="search-panel" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
+        <button id="search-toggle" class="icon-button secondary" type="button" aria-label="Search" title="Search" aria-controls="search-panel" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
         <button id="refresh" class="icon-button secondary" type="button" aria-label="Refresh lyrics" title="Refresh lyrics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4v6h-6M4 20v-6h6M5.2 8a7.5 7.5 0 0 1 12.3-2L20 10M4 14l2.5 4A7.5 7.5 0 0 0 18.8 16"/></svg></button>
       </div>
     </div>
@@ -59,7 +59,7 @@ function activate(context) {
     <div id="volume-panel" hidden><label for="volume">Volume</label><input id="volume" type="range" min="0" max="100" value="0" step="1" disabled><output id="volume-value" for="volume">0%</output></div>
     <p id="control-error" role="status" hidden></p>
   </header>
-  <section id="search-panel" class="search" aria-label="Manual lyrics search">
+  <section id="search-panel" class="search" aria-label="Manual lyrics search" hidden>
     <form id="search-form"><label for="query" class="sr-only">Search lyrics or artist</label><div class="search-row">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
       <input id="query" type="search" maxlength="200" placeholder="Search lyrics or artist…" required autocomplete="off">
