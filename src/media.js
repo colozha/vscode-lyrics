@@ -165,9 +165,15 @@ class MediaMonitor extends EventEmitter {
     if (!entry || this.polling) return;
     this.polling = true;
     try {
-      const position = await entry.properties.Get(PLAYER, 'Position');
-      if (this.players.get(this.selected) === entry) { entry.values.Position = position; this.publish(); }
-    } catch { /* Not every MPRIS source provides Position. */ }
+      const [position, status] = await Promise.allSettled([
+        entry.properties.Get(PLAYER, 'Position'),
+        entry.properties.Get(PLAYER, 'PlaybackStatus')
+      ]);
+      if (this.players.get(this.selected) !== entry) return;
+      if (position.status === 'fulfilled') entry.values.Position = position.value;
+      if (status.status === 'fulfilled') entry.values.PlaybackStatus = status.value;
+      if (position.status === 'fulfilled' || status.status === 'fulfilled') this.publish();
+    } catch { /* Player properties can become unavailable between polls. */ }
     finally { this.polling = false; }
   }
   stopConnection() {

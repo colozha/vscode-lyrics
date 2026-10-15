@@ -74,6 +74,27 @@ test('MPRIS actions call the supported transport methods and clamp seek to track
   assert.equal(await monitor.control('next'), false);
   assert.equal(calls.length, 4);
 });
+test('MPRIS polling refreshes PlaybackStatus without a change signal', async () => {
+  let status = { value: 'Paused' };
+  const monitor = new MediaMonitor();
+  const entry = {
+    values: { PlaybackStatus: { value: 'Stopped' } },
+    properties: { Get: async (_iface, property) => {
+      if (property === 'PlaybackStatus') return status;
+      throw new Error('Position unavailable');
+    } }
+  };
+  monitor.selected = 'org.mpris.MediaPlayer2.test';
+  monitor.players.set(monitor.selected, entry);
+  const states = [];
+  monitor.on('update', ({ track }) => states.push(track.status));
+
+  await monitor.pollPosition();
+  assert.equal(states.at(-1), 'Paused');
+  status = { value: 'Playing' };
+  await monitor.pollPosition();
+  assert.equal(states.at(-1), 'Playing');
+});
 test('HTTP exact lookup falls back to search, caches, and reports invalid/error responses', async () => {
   const urls = [];
   const client = new LyricsClient(async url => { urls.push(url); return url.includes('/get?') ? { status: 404 } : { status: 200, ok: true, json: async () => [record] }; });

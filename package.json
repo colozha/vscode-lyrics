@@ -8,8 +8,8 @@
     "mpris",
     "lrclib"
   ],
-  "version": "0.1.0",
-  "publisher": "husain",
+  "version": "0.1.1",
+  "publisher": "husainabdurrohim",
   "license": "MIT",
   "icon": "media/icon.png",
   "homepage": "https://github.com/colozha/vscode-lyrics#readme",
