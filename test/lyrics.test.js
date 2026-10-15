@@ -35,8 +35,8 @@ test('D-Bus variants, microseconds, and control capabilities become JSON-safe sn
     CanGoPrevious: v(false), CanPlay: v(true), CanPause: v(true), CanGoNext: v(true), CanSeek: v(true)
   });
   assert.equal(data.artist, 'A, B'); assert.equal(data.position, 5); assert.equal(data.duration, 10); assert.doesNotThrow(() => JSON.stringify(data));
-  assert.deepEqual(data.capabilities, { previous: false, playPause: true, next: true, seek: true });
-  assert.deepEqual(snapshot('org.mpris.MediaPlayer2.brave', {}).capabilities, { previous: false, playPause: false, next: false, seek: false });
+  assert.deepEqual(data.capabilities, { previous: false, playPause: true, next: true, seek: true, shuffle: false, volume: false });
+  assert.deepEqual(snapshot('org.mpris.MediaPlayer2.brave', {}).capabilities, { previous: false, playPause: false, next: false, seek: false, shuffle: false, volume: false });
 });
 test('Select playing source, retain active source, honor explicit selection, recover when removed', () => {
   const players = [{ id: 'a', status: 'Paused' }, { id: 'b', status: 'Playing' }, { id: 'c', status: 'Playing' }];
@@ -225,4 +225,84 @@ test('Manual searches discard old results and handle network errors', async () =
   assert.equal(session.state.results[0].id, 1); assert.equal(session.state.searching, false);
   session.client.search = async () => { throw new Error('offline'); };
   await session.search('third'); assert.match(session.state.searchError, /failed/); session.dispose();
+});
+
+test('LRC keeps source section labels without treating metadata as headings', () => {
+  assert.deepEqual(parseLrc('[ar:Artist]\n[Mike Shinoda]\n[00:15]First\n[00:18]Second\n[Emily Armstrong]\n[01:01]Third'), [
+    { time: 15, text: 'First', section: 'Mike Shinoda' },
+    { time: 18, text: 'Second' },
+    { time: 61, text: 'Third', section: 'Emily Armstrong' }
+  ]);
+  assert.deepEqual(parseLrc('[offset:100]\n[Chorus]\n[00:99]Invalid\n[00:02][00:04]Repeated'), [
+    { time: 1.9, text: 'Repeated', section: 'Chorus' }, { time: 3.9, text: 'Repeated' }
+  ]);
+  assert.deepEqual(parseLrc('[ti:Song]\n[Verse 1: Mike Shinoda]\n[00:02]Words'), [{ time: 2, text: 'Words', section: 'Verse 1: Mike Shinoda' }]);
+});
+
+test('MPRIS exposes optional artwork, shuffle and volume with independent capabilities', () => {
+  const data = snapshot('org.mpris.MediaPlayer2.test', {
+    CanControl: { value: true }, Shuffle: { value: false }, Volume: { value: 0 },
+    Metadata: { value: { 'mpris:artUrl': { value: 'https://example.com/cover.png' } } }
+  });
+  assert.equal(data.artUrl, 'https://example.com/cover.png');
+  assert.equal(data.shuffle, false); assert.equal(data.volume, 0);
+  assert.equal(data.capabilities.shuffle, true); assert.equal(data.capabilities.volume, true);
+  const invalid = snapshot('org.mpris.MediaPlayer2.test', { CanControl: true, Shuffle: 'false', Volume: NaN });
+  assert.equal(invalid.shuffle, null); assert.equal(invalid.volume, null);
+  assert.equal(invalid.capabilities.shuffle, false); assert.equal(invalid.capabilities.volume, false);
+  assert.equal(snapshot('org.mpris.MediaPlayer2.test', { CanControl: false, Shuffle: true, Volume: 1 }).capabilities.volume, false);
+});
+
+test('Shuffle and volume use typed D-Bus writes, validate values and read accepted state', async () => {
+  const monitor = new MediaMonitor();
+  const calls = [];
+  const accepted = { Shuffle: false, Volume: .4 };
+  const entry = {
+    values: { CanControl: true, Shuffle: false, Volume: .4 },
+    properties: {
+      Set: async (iface, property, variant) => {
+        calls.push([iface, property, variant.signature, variant.value]);
+        accepted[property] = property === 'Volume' ? Math.min(.8, variant.value) : variant.value;
+      },
+      Get: async (_iface, property) => ({ value: accepted[property] })
+    }
+  };
+  monitor.selected = 'org.mpris.MediaPlayer2.test'; monitor.players.set(monitor.selected, entry);
+  assert.equal(await monitor.control('shuffle', true), true);
+  assert.equal(await monitor.control('volume', 2), true);
+  assert.equal(snapshot(monitor.selected, entry.values).volume, .8);
+  assert.equal(await monitor.control('volume', -1), true);
+  assert.deepEqual(calls.map(call => call.slice(1)), [['Shuffle', 'b', true], ['Volume', 'd', 1], ['Volume', 'd', 0]]);
+  for (const value of [NaN, Infinity, '0.5', undefined]) assert.equal(await monitor.control('volume', value), false);
+  for (const value of [0, 'true', null]) assert.equal(await monitor.control('shuffle', value), false);
+  assert.equal(calls.length, 3);
+  entry.properties.Set = async () => { throw new Error('Read only'); };
+  await assert.rejects(() => monitor.control('shuffle', false), /Read only/);
+  assert.equal(snapshot(monitor.selected, entry.values).shuffle, true);
+  entry.values.CanControl = false;
+  assert.equal(await monitor.control('shuffle', false), false);
+});
+
+test('Artwork changes do not refetch lyrics and stale artwork cannot replace the current cover', async () => {
+  const pending = [];
+  let lookups = 0;
+  const session = new LyricsSession({ find: async () => { lookups++; return record; } }, (url, signal) => new Promise(resolve => pending.push({ url, signal, resolve })));
+  const media = artUrl => ({ track: { ...track, artUrl }, players: [], preferred: '' });
+  session.updateMedia(media('https://example.com/first.png'));
+  await tick();
+  session.updateMedia(media('https://example.com/first.png'));
+  assert.equal(pending.length, 1);
+  session.updateMedia(media('https://example.com/second.png'));
+  assert.equal(lookups, 1); assert.equal(pending[0].signal.aborted, true);
+  pending[0].resolve('old'); await tick(); assert.equal(session.state.artwork, '');
+  pending[1].resolve('current'); await tick(); assert.equal(session.state.artwork, 'current');
+  session.state.results = [record]; session.select(record.id);
+  session.updateMedia(media('https://example.com/third.png'));
+  pending[2].resolve('new cover'); await tick();
+  assert.equal(session.state.mode, 'manual'); assert.equal(lookups, 1);
+  session.updateMedia({ track: null, players: [], preferred: '' });
+  assert.equal(session.state.artwork, '');
+  session.updateMedia(media('https://example.com/last.png'));
+  session.dispose(); pending[3].resolve('disposed'); await tick();
+  assert.equal(session.state.artwork, '');
 });

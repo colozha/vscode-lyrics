@@ -21,13 +21,22 @@ function cleanTitle(title, artist = '') {
 
 function parseLrc(text = '') {
   const lines = [];
+  let section = '';
   for (const line of text.split(/\r?\n/)) {
     const stamps = [...line.matchAll(/\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g)];
     const content = line.replace(/\[\d+:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+    if (!stamps.length) {
+      const heading = content.match(/^\[([^\[\]]+)\]$/);
+      if (heading && !/^(?:\d|(?:ar|al|ti|au|by|offset|length|re|ve):)/i.test(heading[1])) section = heading[1];
+      continue;
+    }
+    let attached = false;
     for (const stamp of stamps) {
       if (Number(stamp[2]) >= 60) continue;
-      lines.push({ time: Number(stamp[1]) * 60 + Number(stamp[2]) + Number('0.' + (stamp[3] || '0')), text: content });
+      lines.push({ time: Number(stamp[1]) * 60 + Number(stamp[2]) + Number('0.' + (stamp[3] || '0')), text: content, ...(section && !attached ? { section } : {}) });
+      attached = true;
     }
+    if (attached) section = '';
   }
   const offset = text.match(/\[offset:([+-]?\d+)\]/i);
   // LRC positive offset advances the lyric relative to the recording.

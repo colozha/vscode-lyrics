@@ -8,7 +8,7 @@
     "mpris",
     "lrclib"
   ],
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "husainabdurrohim",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -61,7 +61,7 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check": "node --check src/extension.js && node --check src/media.js && node --check src/lyrics.js && node --check src/session.js && node --check media/sidebar.js",
+    "check": "node --check src/extension.js && node --check src/media.js && node --check src/lyrics.js && node --check src/session.js && node --check src/artwork.js && node --check media/sidebar.js",
     "package": "vsce package --allow-missing-repository"
   },
   "dependencies": {

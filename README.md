@@ -15,11 +15,13 @@ The extension does not require `playerctl`. For automatic detection, VS Code mus
 ## Use
 
 - The **Player** selector in the footer chooses a media source. **Automatic** follows the active source.
-- When the source exposes them, **Previous**, **Play/Pause**, **Next**, and **Seek** control playback. Unsupported actions are disabled.
-- Timestamped lyrics highlight the current line and follow playback. Scroll the lyrics to pause following, then select **Follow lyrics** to resume.
-- Select **Search** in the header to open manual lyrics search. Search by title or artist and choose a result.
-- A manually selected lyric stays active until the selected player changes. **Refresh** returns to automatic lyrics for the current player.
+- When the source exposes them, **Shuffle**, **Previous**, **Play/Pause**, **Next**, **Volume**, and **Seek** control playback. Select Volume to open its slider; 0% mutes the selected player. Unsupported actions are disabled, and failed changes show a recovery message.
+- Timestamped lyrics show a time column, highlight the current line, and follow playback. Singer or section headings appear when included in the lyrics. Scroll the lyrics to pause following, then select **Follow lyrics** to resume.
+- The search field is open by default. Search by title or artist, press Enter or select the arrow, and choose a result. The search icon in the track header shows or hides the field.
+- A manually selected lyric stays active until the selected track or player changes. Manual timestamped lyrics retain their timestamps without following the active player. **Refresh** returns to automatic lyrics for the current player.
 - **Reconnect** retries the Linux media session connection when it fails.
+- Artwork comes from the selected player when available; otherwise a music-note placeholder appears. Manual selections use the placeholder. A **LIVE** badge identifies explicitly labeled live versions.
+- The layout adapts to narrow sidebars and VS Code light, dark, and high-contrast themes. In very short views, scroll the sidebar to reach all controls.
 
 ## Support and privacy
 
@@ -27,7 +29,7 @@ The extension UI and manual lyrics search work on Linux, Windows, and macOS. Aut
 
 Incorrect or missing titles, artist metadata, and live/remix versions can prevent a match. Use manual search to select the right version. Players that do not provide a position cannot synchronize lyrics. If several sources are active, automatic selection keeps following the current active source; choose a source manually when needed.
 
-Track title, artist, album, duration, and manual search queries are sent over HTTPS to LRCLIB. For automatic lookup, title and available artist metadata are also sent to lyrics.ovh if LRCLIB has no usable lyrics or its request fails. The extension has no telemetry, account tokens, search history, or proxy server. A cache of up to 100 LRCLIB responses is kept in session memory. lyrics.ovh provides plain lyrics; availability, accuracy, and rights follow each source and the rights holders. Attribution is available in the sidebar footer.
+Track title, artist, album, duration, and manual search queries are sent over HTTPS to LRCLIB. For automatic lookup, title and available artist metadata are also sent to lyrics.ovh if LRCLIB has no usable lyrics or its request fails. Artwork URLs provided by the player are loaded by the extension host over HTTPS or from a local file, with a 5 MiB limit and a five-second timeout. HTTPS artwork loading contacts the host named by the player. Only PNG, JPEG, WebP, and GIF artwork is accepted; missing or invalid artwork does not interrupt lyrics. The extension has no telemetry, account tokens, search history, or proxy server. A cache of up to 100 LRCLIB responses is kept in session memory. lyrics.ovh provides plain lyrics; availability, accuracy, and rights follow each source and the rights holders. Attribution is available in the sidebar footer.
 
 ## Test and package
 
@@ -37,13 +39,13 @@ npm run check
 npm run package
 ```
 
-The package is written to `vscode-lyrics-0.1.0.vsix`. Install it through **Extensions → … → Install from VSIX…**, or run:
+The package is written to `vscode-lyrics-0.1.1.vsix`. Install it through **Extensions → … → Install from VSIX…**, or run:
 
 ```sh
-code --install-extension ./vscode-lyrics-0.1.0.vsix
+code --install-extension ./vscode-lyrics-0.1.1.vsix
 ```
 
-Unit tests use `node:test` for LRC parsing, D-Bus metadata and player control, source selection, lyric matching, HTTP/cache behavior, lyrics fallback, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
+Unit tests use `node:test` for LRC parsing and section headings, D-Bus metadata and player control (including shuffle/volume), source selection, bounded artwork loading and stale covers, lyric matching, HTTP/cache behavior, lyrics fallback, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
 
 ## Project structure
 

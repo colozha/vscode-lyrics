@@ -9,9 +9,21 @@ let basePosition = 0;
 let receivedAt = performance.now();
 let seeking = false;
 let trackKey = '';
+let artworkSource = '';
+let volumeEditing = false;
+let controlId = 0;
+const pendingControls = new Map();
 const send = (type, extra = {}) => vscode.postMessage({ type, ...extra });
 const duration = seconds => `${Math.floor((seconds || 0) / 60)}:${String(Math.floor((seconds || 0) % 60)).padStart(2, '0')}`;
 function text(id, value) { $(id).textContent = value; }
+function control(action, extra = {}) {
+  if (pendingControls.has(action)) return;
+  const requestId = ++controlId;
+  pendingControls.set(action, requestId);
+  $('control-error').hidden = true;
+  send('control', { action, requestId, ...extra });
+  updatePlaybackControls();
+}
 
 $('search-toggle').addEventListener('click', () => {
   const expanded = $('search-panel').hidden;
@@ -26,8 +38,30 @@ $('search-form').addEventListener('submit', event => { event.preventDefault(); s
 $('player').addEventListener('change', () => send('player', { id: $('player').value }));
 for (const id of ['refresh', 'reconnect', 'attribution']) $(id).addEventListener('click', () => send(id));
 for (const [id, action] of [['previous', 'previous'], ['play-toggle', 'playPause'], ['next', 'next']]) {
-  $(id).addEventListener('click', () => send('control', { action }));
+  $(id).addEventListener('click', () => control(action));
 }
+$('shuffle').addEventListener('click', () => control('shuffle', { value: !state.track?.shuffle }));
+$('volume-toggle').addEventListener('click', () => {
+  const expanded = $('volume-panel').hidden;
+  $('volume-panel').hidden = !expanded;
+  $('volume-toggle').setAttribute('aria-expanded', String(expanded));
+  if (expanded) $('volume').focus();
+});
+$('volume-panel').addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  volumeEditing = false; $('volume-panel').hidden = true;
+  $('volume-toggle').setAttribute('aria-expanded', 'false'); $('volume-toggle').focus();
+});
+$('volume').addEventListener('input', () => {
+  volumeEditing = true; text('volume-value', `${$('volume').value}%`);
+});
+$('volume').addEventListener('change', () => {
+  control('volume', { value: Number($('volume').value) / 100 }); volumeEditing = false;
+});
+$('volume').addEventListener('pointercancel', () => { volumeEditing = false; });
+$('artwork').addEventListener('error', () => {
+  $('artwork').hidden = true; $('artwork-placeholder').removeAttribute('hidden');
+});
 $('seek').addEventListener('input', () => {
   seeking = true;
   text('elapsed', duration(Number($('seek').value)));
@@ -36,7 +70,7 @@ $('seek').addEventListener('change', () => {
   const position = Number($('seek').value);
   if (Number.isFinite(position)) {
     basePosition = position; receivedAt = performance.now();
-    send('control', { action: 'seek', position });
+    control('seek', { position });
   }
   seeking = false;
 });
@@ -49,9 +83,19 @@ $('lyrics').addEventListener('pointerdown', stopFollowing);
 $('lyrics').addEventListener('keydown', event => { if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) stopFollowing(); });
 
 window.addEventListener('message', event => {
+  if (event.data?.type === 'control-result') {
+    if (pendingControls.get(event.data.action) !== event.data.requestId) return;
+    pendingControls.delete(event.data.action);
+    text('control-error', event.data.error || ''); $('control-error').hidden = !event.data.error;
+    updatePlaybackControls(); return;
+  }
   if (event.data?.type !== 'state') return;
-  const incomingTrackKey = JSON.stringify([event.data.state.track?.id, event.data.state.track?.trackId]);
-  if (incomingTrackKey !== trackKey) seeking = false;
+  const incomingTrackKey = JSON.stringify([event.data.state.track?.id, event.data.state.track?.trackId, event.data.state.track?.title]);
+  if (incomingTrackKey !== trackKey) {
+    seeking = false; volumeEditing = false; pendingControls.clear();
+    $('control-error').hidden = true; $('volume-panel').hidden = true;
+    $('volume-toggle').setAttribute('aria-expanded', 'false');
+  }
   trackKey = incomingTrackKey;
   Object.assign(state, event.data.state);
   basePosition = state.track?.position || 0; receivedAt = performance.now();
@@ -62,6 +106,17 @@ function render(full) {
   const track = manual ? state.record : state.track;
   text('title', track?.trackName || track?.title || 'Waiting for a track');
   text('artist', track?.artistName || track?.artist || 'Play music on your desktop or in a browser.');
+  const title = track?.trackName || track?.title || '';
+  const album = track?.albumName || track?.album || '';
+  const liveVersion = /[\[(]live(?:\s+(?:at|in|from|version|recording|performance)\b[^)\]]*)?[)\]]|\s[-–—]\s*live(?:\s+(?:at|in|from|version|recording|performance)\b.*)?$/i;
+  $('live-badge').hidden = !(liveVersion.test(title.trim()) || liveVersion.test(album.trim()) || /^live(?:\s+(?:at|in|from|version|recording|performance)\b.*)?$/i.test(album.trim()));
+  const artwork = manual ? '' : state.artwork || '';
+  if (artworkSource !== artwork) {
+    artworkSource = artwork;
+    $('artwork').hidden = !artwork; $('artwork-placeholder').toggleAttribute('hidden', Boolean(artwork));
+    if (artwork) $('artwork').src = artwork;
+    else $('artwork').removeAttribute('src');
+  }
   const optionsKey = JSON.stringify([state.players?.map(p => [p.id, p.name]), state.preferred, state.mediaUnsupported]);
   if ($('player').dataset.key !== optionsKey) {
     $('player').replaceChildren(new Option(state.mediaUnsupported ? 'Unavailable' : 'Automatic', ''), ...(state.players || []).map(p => new Option(p.name, p.id)));
@@ -82,7 +137,8 @@ function render(full) {
   text('media-error', state.mediaError || '');
   if (full) {
     $('search-submit').disabled = state.searching;
-    text('search-submit', state.searching ? 'Searching…' : 'Search');
+    $('search-submit').setAttribute('aria-label', state.searching ? 'Searching…' : 'Search');
+    $('search-form').setAttribute('aria-busy', String(Boolean(state.searching)));
     $('search-status').hidden = !state.searching && !state.searchError;
     text('search-status', state.searching ? 'Searching for lyrics…' : state.searchError || '');
     const results = (state.results || []).map(record => {
@@ -106,11 +162,22 @@ function render(full) {
     };
     text('notice', messages[state.status] || ''); $('notice').hidden = state.status === 'ready';
     $('lyrics').setAttribute('aria-busy', String(state.status === 'loading'));
-    const synced = !manual && state.lines?.length;
-    text('lyric-type', state.status === 'ready' ? synced ? 'Synced lyrics' : 'Plain lyrics' : 'Lyrics');
+    $('notice').classList.toggle('loading', state.status === 'loading');
+    const synced = Boolean(state.lines?.length);
+    text('lyric-type', state.status === 'ready' ? synced ? manual ? 'Timestamped lyrics · Manual' : 'Synced lyrics' : 'Plain lyrics' : 'Lyrics');
     if (state.status === 'ready') {
       if (synced) {
-        for (const line of state.lines) { const p = document.createElement('p'); p.className = 'line'; p.textContent = line.text || ' '; $('lines').append(p); }
+        for (const line of state.lines) {
+          const group = document.createElement('div'); group.className = 'line-group';
+          if (line.section) {
+            const heading = document.createElement('p'); heading.className = 'section-label'; heading.textContent = `[${line.section}]`; group.append(heading);
+          }
+          const p = document.createElement('p'); p.className = 'line';
+          const time = document.createElement('time'); time.className = 'line-time';
+          time.dateTime = `PT${Math.max(0, line.time)}S`; time.textContent = duration(Math.max(0, line.time)).padStart(5, '0');
+          const lyric = document.createElement('span'); lyric.textContent = line.text || '\u00a0';
+          p.append(time, lyric); group.append(p); $('lines').append(group);
+        }
       } else {
         const p = document.createElement('p'); p.className = 'plain';
         p.textContent = state.record.plainLyrics || state.lines.map(line => line.text).join('\n'); $('lines').append(p);
@@ -129,10 +196,20 @@ function currentPosition() {
 function updatePlaybackControls() {
   const track = state.track;
   const capabilities = track?.capabilities || {};
-  $('previous').disabled = !capabilities.previous;
-  $('play-toggle').disabled = !capabilities.playPause;
-  $('next').disabled = !capabilities.next;
-  $('seek').disabled = !capabilities.seek;
+  for (const [id, action] of [['previous', 'previous'], ['play-toggle', 'playPause'], ['next', 'next'], ['seek', 'seek'], ['shuffle', 'shuffle'], ['volume', 'volume']]) {
+    $(id).disabled = !capabilities[action] || pendingControls.has(action);
+  }
+  $('shuffle').setAttribute('aria-pressed', String(Boolean(track?.shuffle)));
+  $('shuffle').title = capabilities.shuffle ? track.shuffle ? 'Turn shuffle off' : 'Turn shuffle on' : 'Shuffle unavailable for this player';
+  $('volume-toggle').disabled = !capabilities.volume;
+  $('volume-toggle').title = capabilities.volume ? 'Volume' : 'Volume unavailable for this player';
+  if (!capabilities.volume) {
+    $('volume-panel').hidden = true; $('volume-toggle').setAttribute('aria-expanded', 'false');
+  }
+  if (!volumeEditing) {
+    $('volume').value = String(Math.round(Math.min(1, Math.max(0, track?.volume || 0)) * 100));
+    text('volume-value', `${$('volume').value}%`);
+  }
   const playing = track?.status === 'Playing';
   $('play-toggle').setAttribute('aria-label', playing ? 'Pause' : 'Play');
   $('play-toggle').title = playing ? 'Pause' : 'Play';
@@ -141,7 +218,7 @@ function updatePlaybackControls() {
   const length = Math.max(0, track?.duration || 0);
   $('seek').max = String(length);
   if (!seeking) $('seek').value = String(Math.min(length, currentPosition()));
-  text('elapsed', duration(currentPosition()));
+  if (!seeking) text('elapsed', duration(currentPosition()));
   text('track-duration', duration(length));
 }
 function updatePosition() {
@@ -151,7 +228,7 @@ function updatePosition() {
   for (let i = 0; i < state.lines.length && state.lines[i].time <= position; i++) active = i;
   $('scroll-follow').hidden = followScroll;
   if (active === lastActive) return;
-  const elements = $('lines').children;
+  const elements = $('lines').querySelectorAll('.line');
   if (elements[lastActive]) { elements[lastActive].classList.remove('active'); elements[lastActive].removeAttribute('aria-current'); }
   lastActive = active;
   const element = elements[active];

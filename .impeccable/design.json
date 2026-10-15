@@ -1,9 +1,57 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T09:57:37.486739+00:00",
+  "generatedAt": "2026-10-15T08:35:15.279033+00:00",
   "title": "Design System: VS Code Lyrics",
   "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Host link accent"
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Host sidebar surface"
+      },
+      "active": {
+        "role": "primary",
+        "displayName": "Soft current-row accent"
+      },
+      "time": {
+        "role": "neutral",
+        "displayName": "Readable timestamp mixture"
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Track title",
+        "purpose": "Wide sidebar metadata; title-narrow applies below 480px."
+      },
+      "synced-lyric": {
+        "displayName": "Timestamped lyric",
+        "purpose": "Wrapping lyric text beside a tabular timestamp."
+      },
+      "section": {
+        "displayName": "Source section heading",
+        "purpose": "Only headings carried by source lyrics."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "follow-scroll",
+        "value": "smooth",
+        "purpose": "Automatic following only; reduced motion selects instant scrolling. No entrance or loading animation."
+      }
+    ],
     "breakpoints": [
+      {
+        "name": "narrow-sidebar",
+        "value": "(max-width: 479px)"
+      },
+      {
+        "name": "compact-inset",
+        "value": "(max-width: 300px)"
+      },
       {
         "name": "short-viewport",
         "value": "(max-height: 420px)"
@@ -12,88 +60,116 @@
   },
   "components": [
     {
-      "name": "Primary button",
+      "name": "Play/Pause",
       "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Cari",
-      "html": "<button class=\"ds-button-primary\">Cari</button>",
-      "css": ".ds-button-primary{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;color:var(--vscode-button-foreground);background:var(--vscode-button-background);}.ds-button-primary:hover{background:var(--vscode-button-hoverBackground);}.ds-button-primary:active{filter:brightness(.95);}.ds-button-primary:disabled{cursor:wait;opacity:.65;}.ds-button-primary:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+      "refersTo": "button-play",
+      "description": "Circular primary transport action; the live control reflects playback and capability.",
+      "html": "<button class=\"ds-play\" aria-label=\"Play\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 5v14l11-7z\"/></svg></button>",
+      "css": ".ds-play{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid transparent;border-radius:6px;padding:6px 10px;line-height:1.4;cursor:pointer;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;background:var(--vscode-button-background);color:var(--vscode-button-foreground);}.ds-play svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;width:22px;height:22px;fill:currentColor;stroke-width:1;}.ds-play:hover{background:var(--vscode-button-hoverBackground);}.ds-play:disabled{opacity:.45;cursor:not-allowed;}.ds-play:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}:host-context(.vscode-high-contrast) .ds-play,:host-context(.vscode-high-contrast-light) .ds-play{border-color:var(--vscode-contrastBorder);}"
     },
     {
       "name": "Secondary button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Ikuti lirik",
-      "html": "<button class=\"ds-button-secondary\">Ikuti lirik</button>",
-      "css": ".ds-button-secondary{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;color:var(--vscode-button-secondaryForeground);background:var(--vscode-button-secondaryBackground);}.ds-button-secondary:hover{background:var(--vscode-button-secondaryHoverBackground);}.ds-button-secondary:active{filter:brightness(.95);}.ds-button-secondary:disabled{cursor:wait;opacity:.65;}.ds-button-secondary:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+      "description": "Reconnect and contextual Follow lyrics actions.",
+      "html": "<button class=\"ds-secondary\">Follow lyrics</button>",
+      "css": ".ds-secondary{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid transparent;border-radius:6px;padding:6px 10px;line-height:1.4;cursor:pointer;background:transparent;color:var(--vscode-foreground);}.ds-secondary:hover:not(:disabled){background:var(--vscode-toolbar-hoverBackground,var(--vscode-list-hoverBackground));}.ds-secondary:disabled{opacity:.45;cursor:not-allowed;}.ds-secondary:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}:host-context(.vscode-high-contrast) .ds-secondary,:host-context(.vscode-high-contrast-light) .ds-secondary{border-color:var(--vscode-contrastBorder);}"
+    },
+    {
+      "name": "Header action",
+      "kind": "button",
+      "refersTo": "button-header",
+      "description": "Outlined search or refresh action beside metadata.",
+      "html": "<button class=\"ds-header-action\" aria-label=\"Search\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m15.5 15.5 5 5\"/></svg></button>",
+      "css": ".ds-header-action{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid transparent;border-radius:6px;padding:6px 10px;line-height:1.4;cursor:pointer;display:grid;place-items:center;width:36px;height:36px;padding:0;border-radius:7px;border-color:var(--lyrics-border,var(--vscode-panel-border));background:var(--vscode-input-background);color:var(--vscode-foreground);}.ds-header-action svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}.ds-header-action:hover:not(:disabled){background:var(--vscode-toolbar-hoverBackground,var(--vscode-list-hoverBackground));}.ds-header-action:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}:host-context(.vscode-high-contrast) .ds-header-action,:host-context(.vscode-high-contrast-light) .ds-header-action{border-color:var(--vscode-contrastBorder);}"
     },
     {
       "name": "Attribution",
       "kind": "button",
       "refersTo": "button-link",
-      "description": "Provider link rendered as a text button.",
-      "html": "<button class=\"ds-link\">Lirik dari LRCLIB</button>",
-      "css": ".ds-link{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;padding:0;background:transparent;color:var(--vscode-textLink-foreground);font-size:11px;}.ds-link:hover{background:transparent;text-decoration:underline;text-underline-offset:3px;}.ds-link:active{filter:brightness(.95);}.ds-link:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+      "description": "Compact provider attribution in the footer.",
+      "html": "<button class=\"ds-attribution\">Lyrics by LRCLIB</button>",
+      "css": ".ds-attribution{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid transparent;border-radius:6px;padding:6px 10px;line-height:1.4;cursor:pointer;font-size:11px;border-radius:0;padding:0;background:transparent;color:var(--lyrics-accent,var(--vscode-textLink-foreground,#009fe3));}.ds-attribution:hover{text-decoration:underline;text-underline-offset:3px;}.ds-attribution:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}:host-context(.vscode-high-contrast) .ds-attribution,:host-context(.vscode-high-contrast-light) .ds-attribution{border-color:var(--vscode-contrastBorder);}"
     },
     {
       "name": "Search field",
       "kind": "input",
-      "refersTo": "input",
-      "description": "Visible label with host input treatment.",
-      "html": "<label class=\"ds-label\" for=\"ds-query\">Cari lirik</label><input class=\"ds-input\" id=\"ds-query\" type=\"search\" placeholder=\"Judul lagu atau artis\">",
-      "css": ".ds-label{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:block;margin-bottom:6px;color:var(--vscode-foreground);}.ds-input{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 6px;color:var(--vscode-input-foreground);background:var(--vscode-input-background);caret-color:var(--vscode-input-foreground);}.ds-input::placeholder{color:var(--vscode-input-placeholderForeground);}.ds-input:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+      "refersTo": "search-field",
+      "description": "Open composite field with accessible name and arrow submit.",
+      "html": "<form class=\"ds-search\"><div class=\"ds-search-row\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m15.5 15.5 5 5\"/></svg><input aria-label=\"Search lyrics or artist\" type=\"search\" placeholder=\"Search lyrics or artist…\"><button aria-label=\"Search\" type=\"submit\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button></div></form>",
+      "css": ".ds-search-row{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:flex;align-items:center;gap:10px;min-width:0;min-height:40px;padding:0 10px;border:1px solid var(--vscode-input-border,var(--vscode-panel-border));border-radius:7px;background:var(--vscode-input-background);color:var(--vscode-input-placeholderForeground);}.ds-search-row svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;width:18px;height:18px;flex:none;}.ds-search-row input{font:inherit;flex:1;width:100%;min-width:0;padding:8px 0;border:0;border-radius:0;background:transparent;color:var(--vscode-input-foreground);caret-color:var(--vscode-input-foreground);}.ds-search-row input::placeholder{color:var(--vscode-input-placeholderForeground);opacity:1;}.ds-search-row input:focus-visible{outline:none;}.ds-search-row:focus-within{outline:1px solid var(--vscode-focusBorder);outline-offset:1px;}.ds-search-row button{border:1px solid transparent;border-radius:6px;padding:6px 10px;line-height:1.4;cursor:pointer;display:grid;place-items:center;flex:none;width:28px;height:28px;padding:0;background:transparent;color:var(--vscode-foreground);}.ds-search-row button:hover:not(:disabled){background:var(--vscode-toolbar-hoverBackground,var(--vscode-list-hoverBackground));}.ds-search-row button:disabled{cursor:wait;opacity:.45;}.ds-search-row button:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}:host-context(.vscode-high-contrast) .ds-search-row button,:host-context(.vscode-high-contrast-light) .ds-search-row button{border-color:var(--vscode-contrastBorder);}"
     },
     {
-      "name": "Source selector",
+      "name": "Player selector",
       "kind": "input",
       "refersTo": "source-select",
-      "description": "Native source selection.",
-      "html": "<label class=\"ds-source\">Sumber <select class=\"ds-select\"><option>Otomatis</option></select></label>",
-      "css": ".ds-source{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--vscode-descriptionForeground);}.ds-select{font:inherit;flex:1;min-width:80px;max-width:100%;padding:5px 6px;border:1px solid var(--vscode-input-border,transparent);border-radius:2px;color:var(--vscode-input-foreground);background:var(--vscode-input-background);}.ds-select:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+      "description": "Native, wrapping footer source selection.",
+      "html": "<label class=\"ds-source\">Player <select class=\"ds-select\"><option>Automatic</option></select></label>",
+      "css": ".ds-source{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;color:var(--vscode-descriptionForeground);}.ds-select{font:inherit;flex:1 1 90px;min-width:70px;max-width:100%;padding:4px 6px;border:1px solid var(--vscode-input-border,var(--vscode-panel-border));border-radius:6px;background:var(--vscode-input-background);color:var(--vscode-input-foreground);}.ds-select:disabled{opacity:.55;}.ds-select:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}"
     },
     {
       "name": "Search result",
       "kind": "button",
       "refersTo": "search-result",
-      "description": "Title and muted metadata in a list row.",
-      "html": "<button class=\"ds-result\"><strong>Judul lagu</strong><span>Artis \u00b7 3:20 \u00b7 Sinkron</span></button>",
-      "css": ".ds-result{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid var(--vscode-input-border,transparent);border-radius:2px;padding:5px 10px;line-height:1.4;cursor:pointer;display:block;width:100%;padding:10px 6px;text-align:left;background:transparent;color:var(--vscode-foreground);border-bottom:1px solid var(--vscode-panel-border);}.ds-result strong,.ds-result span{display:block;overflow-wrap:anywhere;}.ds-result strong{font-weight:600;}.ds-result span{color:var(--vscode-descriptionForeground);margin-top:4px;font-size:12px;}.ds-result:hover{background:var(--vscode-list-hoverBackground);}.ds-result:active{filter:brightness(.95);}.ds-result:focus-visible{outline:1px solid var(--vscode-focusBorder);outline-offset:2px;}"
+      "description": "Flat list row with title and supporting metadata.",
+      "html": "<button class=\"ds-result\"><strong>Track title</strong><span>Artist · 3:20 · Synced</span></button>",
+      "css": ".ds-result{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);border:1px solid transparent;border-radius:6px;padding:6px 10px;line-height:1.4;cursor:pointer;display:block;width:100%;padding:10px 6px;border-radius:0;border-bottom:1px solid var(--lyrics-border,var(--vscode-panel-border));text-align:left;background:transparent;color:var(--vscode-foreground);}.ds-result strong,.ds-result span{display:block;overflow-wrap:anywhere;}.ds-result strong{font-weight:600;}.ds-result span{margin-top:4px;font-size:12px;color:var(--vscode-descriptionForeground);}.ds-result:hover{background:var(--vscode-list-hoverBackground);}.ds-result:focus-visible{outline:2px solid var(--vscode-focusBorder);outline-offset:2px;}:host-context(.vscode-high-contrast) .ds-result,:host-context(.vscode-high-contrast-light) .ds-result{border-color:var(--vscode-contrastBorder);}"
+    },
+    {
+      "name": "LIVE badge",
+      "kind": "chip",
+      "refersTo": "live-badge",
+      "description": "Shown only for explicitly identified live versions.",
+      "html": "<span class=\"ds-live\">LIVE</span>",
+      "css": ".ds-live{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:inline-block;margin-top:9px;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;line-height:1.5;letter-spacing:.03em;background:var(--vscode-badge-background);color:var(--vscode-badge-foreground);}"
+    },
+    {
+      "name": "Artwork placeholder",
+      "kind": "custom",
+      "refersTo": "artwork",
+      "description": "Decorative music-note fallback in the square artwork slot.",
+      "html": "<div class=\"ds-artwork\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\"><path d=\"M9 18V5l11-2v13M9 9l11-2\"/><ellipse cx=\"6\" cy=\"18\" rx=\"3\" ry=\"2.5\"/><ellipse cx=\"17\" cy=\"16\" rx=\"3\" ry=\"2.5\"/></svg></div>",
+      "css": ".ds-artwork{display:grid;place-items:center;width:96px;height:96px;overflow:hidden;border-radius:9px;background:var(--vscode-input-background);color:var(--vscode-descriptionForeground);}.ds-artwork svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;width:36px;height:36px;}"
     },
     {
       "name": "Current lyric",
       "kind": "custom",
-      "description": "Current synchronized line; state follows playback.",
-      "html": "<p class=\"ds-line\" aria-current=\"true\">Baris lirik saat ini</p>",
-      "css": ".ds-line{font-family:var(--vscode-font-family);margin:0;padding:8px 0;font-size:16px;line-height:1.65;overflow-wrap:anywhere;min-height:40px;color:var(--vscode-foreground);font-weight:600;text-decoration:underline;text-decoration-color:var(--vscode-textLink-foreground);text-underline-offset:6px;text-decoration-thickness:2px;}"
+      "refersTo": "lyric-row-active",
+      "description": "Timestamped automatic lyric with a soft current-row background.",
+      "html": "<p class=\"ds-line\" aria-current=\"true\"><time class=\"ds-line-time\" datetime=\"PT72S\">01:12</time><span>The current lyric line</span></p>",
+      "css": ".ds-line{font-family:var(--vscode-font-family);font-size:var(--vscode-font-size,13px);display:grid;grid-template-columns:42px minmax(0,1fr);align-items:baseline;column-gap:8px;margin:0;padding:7px 8px;min-height:36px;border-radius:6px;font-size:16px;line-height:1.6;font-weight:600;overflow-wrap:anywhere;color:var(--vscode-foreground);background:var(--lyrics-active,color-mix(in srgb,var(--vscode-textLink-foreground,#009fe3) 18%,transparent));}.ds-line-time{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--lyrics-accent,var(--vscode-textLink-foreground,#009fe3));}:host-context(.vscode-high-contrast) .ds-line,:host-context(.vscode-high-contrast-light) .ds-line{background:var(--vscode-list-activeSelectionBackground);color:var(--vscode-list-activeSelectionForeground);outline:1px solid var(--vscode-contrastActiveBorder,var(--vscode-focusBorder));outline-offset:-1px;}:host-context(.vscode-high-contrast) .ds-line-time,:host-context(.vscode-high-contrast-light) .ds-line-time{color:inherit;}"
     }
   ],
   "narrative": {
     "northStar": "Native VS Code reading surface",
-    "overview": "Operate mode is quiet, compact, and familiar. The sidebar inherits the user's VS Code theme. Metadata, source selection, and search establish context; lyrics receive the flexible reading space. The approved direction excludes artwork and playback controls.",
+    "overview": "The sidebar combines a compact music player with a flexible lyric reading surface. It inherits VS Code's theme and font, using artwork, outline controls, quiet separators, and a softly highlighted current row to establish track context without competing with the lyrics.\n\nThe approved player composition is theme-adaptive: artwork sits beside title and artist, search stays open initially, and available playback controls remain visible. Source selection, playback status, lyric mode, attribution, reconnect, and paused-follow recovery retain their existing roles.",
     "keyCharacteristics": [
       "Host-owned colors and typography.",
-      "Compact metadata, source selection, and search.",
-      "Lyrics as the primary reading surface.",
-      "Flat surfaces and visible keyboard focus."
+      "Artwork and capability-aware outline playback controls.",
+      "Open search and timestamped lyric rows with source-provided headings.",
+      "Flat surfaces, visible focus, and explicit high-contrast states.",
+      "Responsive reading space with reachable controls in short viewports."
     ],
     "rules": [
       {
         "name": "The Host Theme Rule",
-        "body": "Preserve VS Code theme variables; do not introduce an independent light/dark palette or synthesized tonal ramps.",
+        "body": "Preserve VS Code theme roles and the derived accent mixtures; high-contrast overrides take precedence over translucent treatments.",
         "section": "colors"
       }
     ],
     "dos": [
       "Do inherit host theme colors and font family.",
-      "Do keep metadata and search compact so lyrics receive the flexible reading space.",
-      "Do retain labels, keyboard focus, text selection, wrapping, and high-contrast borders.",
-      "Do convey the current lyric with weight and underline as well as color.",
-      "Do respect reduced motion and pause following during manual reading."
+      "Do preserve the artwork, metadata, header actions, transport, open search, lyric region, and footer hierarchy.",
+      "Do retain accessible action labels, keyboard focus, text selection, wrapping, and high-contrast outlines.",
+      "Do convey the current lyric with row background, semibold weight, and aria-current as well as color.",
+      "Do respect reduced motion and pause following during manual reading.",
+      "Do show artwork, LIVE, and section headings only when supported by the relevant metadata or lyric source."
     ],
     "donts": [
-      "Don't introduce artwork or playback controls into this sidebar.",
-      "Don't add an independent palette, decorative typeface, or shadows.",
-      "Don't turn lyric lines into cards or hide manual search behind another surface."
+      "Don't add an independent light/dark palette, decorative typeface, or shadows.",
+      "Don't restore collapsed-by-default search or an underline-only current lyric.",
+      "Don't enable unsupported playback actions or imply that manual timestamped lyrics follow the player.",
+      "Don't clip controls or footer content in narrow or short views."
     ]
   }
 }

@@ -7,6 +7,7 @@ const MPRIS_XML = `<node>
   <interface name="org.freedesktop.DBus.Properties">
     <method name="GetAll"><arg type="s" direction="in"/><arg type="a{sv}" direction="out"/></method>
     <method name="Get"><arg type="s" direction="in"/><arg type="s" direction="in"/><arg type="v" direction="out"/></method>
+    <method name="Set"><arg type="s" direction="in"/><arg type="s" direction="in"/><arg type="v" direction="in"/></method>
     <signal name="PropertiesChanged"><arg type="s"/><arg type="a{sv}"/><arg type="as"/></signal>
   </interface>
   <interface name="org.mpris.MediaPlayer2.Player">
@@ -33,6 +34,9 @@ function snapshot(name, properties) {
     title: String(unwrap(metadata['xesam:title']) || ''),
     artist: Array.isArray(unwrap(metadata['xesam:artist'])) ? unwrap(metadata['xesam:artist']).map(String).join(', ') : String(unwrap(metadata['xesam:artist']) || ''),
     album: String(unwrap(metadata['xesam:album']) || ''),
+    artUrl: String(unwrap(metadata['mpris:artUrl']) || ''),
+    shuffle: typeof unwrap(properties.Shuffle) === 'boolean' ? unwrap(properties.Shuffle) : null,
+    volume: typeof unwrap(properties.Volume) === 'number' && Number.isFinite(unwrap(properties.Volume)) ? Math.max(0, unwrap(properties.Volume)) : null,
     duration, position: seconds(properties.Position),
     status: unwrap(properties.PlaybackStatus) || 'Stopped',
     rate: Number(unwrap(properties.Rate) ?? 1),
@@ -40,7 +44,9 @@ function snapshot(name, properties) {
       previous: canControl && flag(properties.CanGoPrevious),
       playPause: canControl && (flag(properties.CanPlay) || flag(properties.CanPause)),
       next: canControl && flag(properties.CanGoNext),
-      seek: canControl && flag(properties.CanSeek) && duration > 0 && Boolean(trackId)
+      seek: canControl && flag(properties.CanSeek) && duration > 0 && Boolean(trackId),
+      shuffle: canControl && typeof unwrap(properties.Shuffle) === 'boolean',
+      volume: canControl && typeof unwrap(properties.Volume) === 'number' && Number.isFinite(unwrap(properties.Volume))
     }
   };
 }
@@ -120,7 +126,7 @@ class MediaMonitor extends EventEmitter {
     this.publish();
   }
   select(id) { this.preferred = id; this.publish(); }
-  async control(action, position) {
+  async control(action, value) {
     const name = this.selected;
     const entry = this.players.get(name);
     if (!entry) return false;
@@ -139,9 +145,20 @@ class MediaMonitor extends EventEmitter {
         await entry.player.Next();
         return true;
       case 'seek':
-        if (!track.capabilities.seek || !Number.isFinite(position)) return false;
-        await entry.player.SetPosition(track.trackId, BigInt(Math.round(Math.min(track.duration, Math.max(0, position)) * 1e6)));
+        if (!track.capabilities.seek || !Number.isFinite(value)) return false;
+        await entry.player.SetPosition(track.trackId, BigInt(Math.round(Math.min(track.duration, Math.max(0, value)) * 1e6)));
         return true;
+      case 'shuffle':
+      case 'volume': {
+        if (!track.capabilities[action] || (action === 'shuffle' ? typeof value !== 'boolean' : typeof value !== 'number' || !Number.isFinite(value))) return false;
+        const property = action === 'shuffle' ? 'Shuffle' : 'Volume';
+        const { Variant } = require('dbus-next');
+        await entry.properties.Set(PLAYER, property, new Variant(action === 'shuffle' ? 'b' : 'd', action === 'shuffle' ? value : Math.min(1, Math.max(0, value))));
+        // Read back the player's accepted value; some players clamp or reject writes.
+        entry.values[property] = await entry.properties.Get(PLAYER, property);
+        if (this.players.get(name) === entry) this.publish();
+        return true;
+      }
       default:
         return false;
     }

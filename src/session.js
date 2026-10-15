@@ -1,17 +1,19 @@
 'use strict';
 const { EventEmitter } = require('node:events');
 const { parseLrc } = require('./lyrics');
+const { loadArtwork } = require('./artwork');
 const identity = track => track ? [track.id, track.trackId, track.title, track.artist, track.album, track.duration].join('\u0000') : '';
 
 class LyricsSession extends EventEmitter {
-  constructor(client) {
-    super(); this.client = client; this.generation = 0;
-    this.state = { track: null, players: [], preferred: '', mode: 'auto', status: 'waiting', record: null, lines: [], results: [], searching: false, searchError: '', mediaError: '', mediaUnsupported: false, error: '' };
+  constructor(client, artworkLoader = loadArtwork) {
+    super(); this.client = client; this.generation = 0; this.artworkLoader = artworkLoader; this.artworkKey = '';
+    this.state = { track: null, players: [], preferred: '', artwork: '', mode: 'auto', status: 'waiting', record: null, lines: [], results: [], searching: false, searchError: '', mediaError: '', mediaUnsupported: false, error: '' };
   }
   publish() { this.emit('update', this.state); }
   updateMedia({ track, players, preferred }) {
     const changed = identity(track) !== identity(this.state.track);
     Object.assign(this.state, { track, players, preferred });
+    this.updateArtwork(track);
     if (changed) {
       if (track?.title) void this.follow();
       else {
@@ -20,6 +22,19 @@ class LyricsSession extends EventEmitter {
         this.publish();
       }
     } else this.publish();
+  }
+  updateArtwork(track) {
+    const key = JSON.stringify([identity(track), track?.artUrl]);
+    if (key === this.artworkKey) return;
+    this.artworkKey = key;
+    this.artworkController?.abort();
+    this.state.artwork = '';
+    if (!track?.artUrl) return;
+    const controller = this.artworkController = new AbortController();
+    void this.artworkLoader(track.artUrl, controller.signal).then(artwork => {
+      if (controller.signal.aborted || this.artworkKey !== key || !artwork) return;
+      this.state.artwork = artwork; this.publish();
+    }).catch(() => { /* Artwork is optional; lyrics and playback remain available. */ });
   }
   cancel() { this.controller?.abort(); this.generation++; }
   setRecord(record) {
@@ -65,6 +80,6 @@ class LyricsSession extends EventEmitter {
     this.cancel(); this.state.mode = 'manual'; this.setRecord(record);
     this.state.results = []; this.state.searchError = ''; this.publish();
   }
-  dispose() { this.cancel(); this.searchController?.abort(); this.removeAllListeners(); }
+  dispose() { this.cancel(); this.searchController?.abort(); this.artworkController?.abort(); this.removeAllListeners(); }
 }
 module.exports = { LyricsSession, identity };
