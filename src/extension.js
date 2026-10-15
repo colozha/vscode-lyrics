@@ -42,21 +42,18 @@ function activate(context) {
     </div>
     <div class="player-controls" role="group" aria-label="Player controls">
       <div class="transport-row">
-        <button id="shuffle" class="transport secondary" type="button" aria-label="Shuffle" aria-pressed="false" title="Shuffle" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 3.5-2 5-5m2-2c1.5-3 3-5 5-5h3m-4-4 4 4-4 4"/></svg></button>
         <button id="previous" class="transport secondary" type="button" aria-label="Previous track" title="Previous track" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5v14M19 5v14L8 12z"/></svg></button>
         <button id="play-toggle" class="transport play-button" type="button" aria-label="Play" title="Play" disabled>
           <svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
           <svg id="pause-icon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M8 6v12M16 6v12"/></svg>
         </button>
         <button id="next" class="transport secondary" type="button" aria-label="Next track" title="Next track" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5v14M5 5v14l11-7z"/></svg></button>
-        <button id="volume-toggle" class="transport secondary" type="button" aria-label="Volume" title="Volume" aria-controls="volume-panel" aria-expanded="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4zM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg></button>
       </div>
       <div class="seek-control">
         <input id="seek" type="range" min="0" max="0" value="0" step="1" aria-label="Seek position" disabled>
         <div id="playback-time" aria-label="Current position and duration"><span id="elapsed">0:00</span><span id="track-duration">0:00</span></div>
       </div>
     </div>
-    <div id="volume-panel" hidden><label for="volume">Volume</label><input id="volume" type="range" min="0" max="100" value="0" step="1" disabled><output id="volume-value" for="volume">0%</output></div>
     <p id="control-error" role="status" hidden></p>
   </header>
   <section id="search-panel" class="search" aria-label="Manual lyrics search" hidden>
@@ -100,8 +97,7 @@ function activate(context) {
             const { action } = message;
             const value = action === 'seek' ? message.position : message.value;
             const valid = ['previous', 'playPause', 'next'].includes(action)
-              || action === 'shuffle' && typeof value === 'boolean'
-              || ['seek', 'volume'].includes(action) && typeof value === 'number' && Number.isFinite(value);
+              || action === 'seek' && typeof value === 'number' && Number.isFinite(value);
             if (valid) void media.control(action, value).then(
               supported => webview.postMessage({ type: 'control-result', action, requestId: message.requestId, error: supported ? '' : 'This control is unavailable for the selected player.' }),
               () => webview.postMessage({ type: 'control-result', action, requestId: message.requestId, error: 'The player could not apply that change. Try again or choose another player.' })

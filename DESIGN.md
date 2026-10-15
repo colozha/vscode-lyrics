@@ -179,7 +179,7 @@ The approved player composition is theme-adaptive: artwork sits beside title and
 
 ### Primary
 
-The host link accent gives timestamps, section headings, attribution, and selected shuffle a shared voice. The host button roles supply the circular Play/Pause action. The reference's blue/cyan character follows the selected VS Code theme rather than a fixed independent palette.
+The host link accent gives timestamps, section headings, and attribution a shared voice. The host button roles supply the circular Play/Pause action. The reference's blue/cyan character follows the selected VS Code theme rather than a fixed independent palette.
 
 ### Neutral
 
@@ -189,19 +189,19 @@ Sidebar, foreground, description, input, badge, border, hover, scrollbar, select
 
 ## Typography
 
-Use the host font family throughout. The frontmatter owns the implemented hierarchy: responsive title and artist roles, synchronized and plain lyrics, source section headings, labels, footer, and LIVE badge. Titles and result titles are semibold; the active lyric and its timestamp gain semibold weight. Timestamp and playback values use tabular numerals. Long metadata, section headings, and lyric text wrap; plain lyrics preserve source line breaks. Playback time, lyric mode, and footer use the footer scale; search, connection, volume, and control messages use the label scale.
+Use the host font family throughout. The frontmatter owns the implemented hierarchy: responsive title and artist roles, synchronized and plain lyrics, source section headings, labels, footer, and LIVE badge. Titles and result titles are semibold; the active lyric and its timestamp gain semibold weight. Timestamp and playback values use tabular numerals. Long metadata, section headings, and lyric text wrap; plain lyrics preserve source line breaks. Playback time, lyric mode, and footer use the footer scale; search, connection, and control messages use the label scale.
 
 ## Layout
 
 A viewport-height flex column contains the track header, transport and progress, optional search, contextual connection recovery, flexible lyric region, and two-row footer. The wide header uses artwork, flexible track copy, and actions in three columns. Artwork is square (96px); shared horizontal insets use the inset token. Search has a minimum height (40px). Results scroll within a bounded region (maximum `min(220px, 30vh)`).
 
-Below 480px, artwork becomes compact (64px) with the input radius, title and artist use their narrow roles, header actions stack (28px each), and progress moves below transport. Transport distributes across the width. Transport and header buttons are 28px square with 16px icons; Play/Pause remains circular (32px) with an 18px icon. At widths of 300px and below, horizontal insets shrink (12px), and the timestamp column narrows (42px to 36px). At heights of 420px and below, header, transport, search, lyric toolbar, and footer spacing compress. The body scrolls vertically when minimum content exceeds the viewport so controls remain reachable.
+Below 480px, artwork becomes compact (64px) with the input radius, title and artist use their narrow roles, and header actions stack (28px each). Transport buttons and seek remain on one row with a 6px gap; transport buttons remain at their native target sizes while seek takes the remaining width. Transport and header buttons are 28px square with 16px icons; Play/Pause remains circular (32px) with an 18px icon. At widths of 300px and below, horizontal insets shrink (12px), and the timestamp column narrows (42px to 36px). At heights of 420px and below, header, transport, search, lyric toolbar, and footer spacing compress. The body scrolls vertically when minimum content exceeds the viewport so controls remain reachable.
 
 The lyric region has a minimum height (60px) and its own vertical scrolling; its toolbar is compact (36px minimum, 30px in short views). Synchronized rows use a fixed timestamp column and a flexible text column, with trailing reading room (35vh). Source headings align with lyric text. Footer rows and the Player selector wrap; the selector retains a minimum width (70px).
 
 ## Elevation & Depth
 
-Surfaces are flat with no shadows. Thin host-colored borders separate player context, search, recovery, and footer. Inputs and artwork supply restrained tonal surfaces. Hover, focus, selected shuffle, and the active lyric background communicate state without decorative elevation. Loading uses a static two-band placeholder rather than an animated shimmer.
+Surfaces are flat with no shadows. Thin host-colored borders separate player context, search, recovery, and footer. Inputs and artwork supply restrained tonal surfaces. Hover, focus, and the active lyric background communicate state without decorative elevation. Loading uses a static two-band placeholder rather than an animated shimmer.
 
 ## Shapes
 
@@ -211,11 +211,11 @@ Small rounded rectangles organize badge, controls, lyric rows, inputs, and artwo
 
 ### Buttons
 
-Outline SVG icons provide search, refresh, shuffle, previous, next, volume, and transport affordances; each action has an accessible English name. Play/Pause uses host primary-button colors; other controls are transparent or input-backed header buttons with host toolbar hover. Unsupported or pending playback actions are disabled. Disabled buttons reduce opacity (0.45), and disabled inputs/selects use reduced opacity (0.55). Search uses a waiting cursor while active. Attribution is a text-style button with an underline on hover. Reconnect and Follow lyrics remain compact text buttons.
+Outline SVG icons provide search, refresh, previous, next, and transport affordances; each action has an accessible English name. Play/Pause uses host primary-button colors; other controls are transparent or input-backed header buttons with host toolbar hover. Unsupported or pending playback actions are disabled. Disabled buttons reduce opacity (0.45), and disabled inputs/selects use reduced opacity (0.55). Search uses a waiting cursor while active. Attribution is a text-style button with an underline on hover. Reconnect and Follow lyrics remain compact text buttons.
 
 ### Inputs / Fields
 
-Search is hidden initially and can be toggled from the header; reopening focuses its field. A search icon, expanding query input, and arrow submit action share one rounded input surface with an accessible label. Enter also submits. Search status and results appear below. The footer retains native Player selection. Seek and the optional Volume panel use native range inputs tinted with the accent; volume opens from its icon and Escape closes it and returns focus. Unsupported range actions stay disabled. Control failures appear as contextual recovery text.
+Search is hidden initially and can be toggled from the header; reopening focuses its field. A search icon, expanding query input, and arrow submit action share one rounded input surface with an accessible label. Enter also submits. Search status and results appear below. The footer retains native Player selection. Seek uses a native range input with a 2px accent-tinted track, no visible thumb, and a 20px interaction area. Keyboard focus remains visible; unsupported seek stays disabled. Control failures appear as contextual recovery text.
 
 ### Artwork and LIVE
 

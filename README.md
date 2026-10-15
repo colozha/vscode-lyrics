@@ -15,7 +15,7 @@ The extension does not require `playerctl`. For automatic detection, VS Code mus
 ## Use
 
 - The **Player** selector in the footer chooses a media source. **Automatic** follows the active source.
-- When the source exposes them, **Shuffle**, **Previous**, **Play/Pause**, **Next**, **Volume**, and **Seek** control playback. Select Volume to open its slider; 0% mutes the selected player. Unsupported actions are disabled, and failed changes show a recovery message.
+- **Previous**, **Play/Pause**, **Next**, and **Seek** control playback when the source supports them. Unsupported actions are disabled, and failed changes show a recovery message.
 - Timestamped lyrics show a time column, highlight the current line, and follow playback. Singer or section headings appear when included in the lyrics. Scroll the lyrics to pause following, then select **Follow lyrics** to resume.
 - The search field is open by default. Search by title or artist, press Enter or select the arrow, and choose a result. The search icon in the track header shows or hides the field.
 - A manually selected lyric stays active until the selected track or player changes. Manual timestamped lyrics retain their timestamps without following the active player. **Refresh** returns to automatic lyrics for the current player.
@@ -45,7 +45,7 @@ The package is written to `vscode-lyrics-0.1.1.vsix`. Install it through **Exten
 code --install-extension ./vscode-lyrics-0.1.1.vsix
 ```
 
-Unit tests use `node:test` for LRC parsing and section headings, D-Bus metadata and player control (including shuffle/volume), source selection, bounded artwork loading and stale covers, lyric matching, HTTP/cache behavior, lyrics fallback, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
+Unit tests use `node:test` for LRC parsing and section headings, D-Bus metadata and player control (including backend shuffle/volume support), source selection, bounded artwork loading and stale covers, lyric matching, HTTP/cache behavior, lyrics fallback, manual search, and stale responses. Unit tests do not require a player, VS Code, or internet access. Verify the UI in the Extension Development Host and playback controls with a real Linux MPRIS player. macOS verification requires a Mac.
 
 ## Project structure
 

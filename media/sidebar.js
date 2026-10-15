@@ -10,7 +10,6 @@ let receivedAt = performance.now();
 let seeking = false;
 let trackKey = '';
 let artworkSource = '';
-let volumeEditing = false;
 let controlId = 0;
 const pendingControls = new Map();
 const send = (type, extra = {}) => vscode.postMessage({ type, ...extra });
@@ -40,25 +39,6 @@ for (const id of ['refresh', 'reconnect', 'attribution']) $(id).addEventListener
 for (const [id, action] of [['previous', 'previous'], ['play-toggle', 'playPause'], ['next', 'next']]) {
   $(id).addEventListener('click', () => control(action));
 }
-$('shuffle').addEventListener('click', () => control('shuffle', { value: !state.track?.shuffle }));
-$('volume-toggle').addEventListener('click', () => {
-  const expanded = $('volume-panel').hidden;
-  $('volume-panel').hidden = !expanded;
-  $('volume-toggle').setAttribute('aria-expanded', String(expanded));
-  if (expanded) $('volume').focus();
-});
-$('volume-panel').addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  volumeEditing = false; $('volume-panel').hidden = true;
-  $('volume-toggle').setAttribute('aria-expanded', 'false'); $('volume-toggle').focus();
-});
-$('volume').addEventListener('input', () => {
-  volumeEditing = true; text('volume-value', `${$('volume').value}%`);
-});
-$('volume').addEventListener('change', () => {
-  control('volume', { value: Number($('volume').value) / 100 }); volumeEditing = false;
-});
-$('volume').addEventListener('pointercancel', () => { volumeEditing = false; });
 $('artwork').addEventListener('error', () => {
   $('artwork').hidden = true; $('artwork-placeholder').removeAttribute('hidden');
 });
@@ -92,9 +72,8 @@ window.addEventListener('message', event => {
   if (event.data?.type !== 'state') return;
   const incomingTrackKey = JSON.stringify([event.data.state.track?.id, event.data.state.track?.trackId, event.data.state.track?.title]);
   if (incomingTrackKey !== trackKey) {
-    seeking = false; volumeEditing = false; pendingControls.clear();
-    $('control-error').hidden = true; $('volume-panel').hidden = true;
-    $('volume-toggle').setAttribute('aria-expanded', 'false');
+    seeking = false; pendingControls.clear();
+    $('control-error').hidden = true;
   }
   trackKey = incomingTrackKey;
   Object.assign(state, event.data.state);
@@ -196,19 +175,8 @@ function currentPosition() {
 function updatePlaybackControls() {
   const track = state.track;
   const capabilities = track?.capabilities || {};
-  for (const [id, action] of [['previous', 'previous'], ['play-toggle', 'playPause'], ['next', 'next'], ['seek', 'seek'], ['shuffle', 'shuffle'], ['volume', 'volume']]) {
+  for (const [id, action] of [['previous', 'previous'], ['play-toggle', 'playPause'], ['next', 'next'], ['seek', 'seek']]) {
     $(id).disabled = !capabilities[action] || pendingControls.has(action);
-  }
-  $('shuffle').setAttribute('aria-pressed', String(Boolean(track?.shuffle)));
-  $('shuffle').title = capabilities.shuffle ? track.shuffle ? 'Turn shuffle off' : 'Turn shuffle on' : 'Shuffle unavailable for this player';
-  $('volume-toggle').disabled = !capabilities.volume;
-  $('volume-toggle').title = capabilities.volume ? 'Volume' : 'Volume unavailable for this player';
-  if (!capabilities.volume) {
-    $('volume-panel').hidden = true; $('volume-toggle').setAttribute('aria-expanded', 'false');
-  }
-  if (!volumeEditing) {
-    $('volume').value = String(Math.round(Math.min(1, Math.max(0, track?.volume || 0)) * 100));
-    text('volume-value', `${$('volume').value}%`);
   }
   const playing = track?.status === 'Playing';
   $('play-toggle').setAttribute('aria-label', playing ? 'Pause' : 'Play');
